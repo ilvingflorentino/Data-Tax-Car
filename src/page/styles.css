@@ -1,0 +1,35 @@
+
+.container {
+  margin-top: 20px;
+}
+
+.filters {
+  display: flex;
+  gap: 10px; /* Espacio entre los filtros */
+  margin-bottom: 20px;
+}
+
+.table-container {
+  margin-top: 20px;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table th,
+.table td {
+  border: 1px solid #ddd;
+  padding: 8px;
+}
+
+.table th {
+  background-color: #f2f2f2;
+  text-align: left;
+}
+
+.table img {
+  display: block;
+  margin: 0 auto;
+}
