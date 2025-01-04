@@ -1,10 +1,12 @@
 import { useState, useEffect } from "react";
-import { Pagination, Select } from "antd";
+import { Select } from "antd";
 import type { SelectProps } from "antd";
 import "./styles.css";
 
 export const UsersPage = () => {
   const [data, setData] = useState([]);
+
+  
   const options: SelectProps["options"] = [];
   for (let i = 10; i < 36; i++) {
     options.push({
@@ -36,55 +38,30 @@ export const UsersPage = () => {
   return (
     <div className="container">
       <h1>Data Tax Car 2024-2025</h1>
+
       <hr />
       <div className="filters">
         <Select
           mode="tags"
-          style={{ width: "30%" }}
+          style={{ width: "20%" }}
           onChange={handleChange}
           tokenSeparators={[","]}
           options={options}
         />
         <Select
           mode="tags"
-          style={{ width: "30%" }}
+          style={{ width: "20%" }}
           onChange={handleChange}
           tokenSeparators={[","]}
           options={options}
         />
         <Select
           mode="tags"
-          style={{ width: "30%" }}
+          style={{ width: "20%" }}
           onChange={handleChange}
           tokenSeparators={[","]}
           options={options}
         />
-      </div>
-      <div className="table-container">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Marca</th>
-              <th>Modelo</th>
-              <th>Valor</th>
-              <th>Pais</th>
-              <th>Especificaciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {data.map((user) => (
-              <tr key={user.id}>
-                <td>{user.id}</td>
-                <td>{user.email}</td>
-                <td>{`${user.first_name} ${user.last_name}`}</td>
-                <td>
-                  <img src={user.avatar} alt={user.first_name} width="70" />
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-        <Pagination defaultCurrent={1} total={500} />
       </div>
     </div>
   );
