@@ -110,16 +110,6 @@ const App: React.FC = () => {
     onChange: onSelectChange,
   };
 
-  // Calcular los totales globales
-  const totalSummary = selectedVehicles.reduce(
-    (acc, vehicle) => {
-      const taxes = calculateTaxes(vehicle);
-      acc.totalImpuestos += taxes.TotalImpuestos;
-      acc.totalGeneral += taxes.TotalGeneral;
-      return acc;
-    },
-    { totalImpuestos: 0, totalGeneral: 0 }
-  );
 
   return (
     <div style={{ padding: "16px" }}>
