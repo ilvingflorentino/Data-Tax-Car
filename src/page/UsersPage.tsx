@@ -36,7 +36,9 @@ const App: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const params = new URLSearchParams(filters);
+      const params = new URLSearchParams(
+        Object.entries(filters).filter(([key, value]) => value.trim() !== "")
+      );
       const response = await fetch(`http://localhost:3000/vehicles?${params}`);
       const result = await response.json();
       if (result.success) {
@@ -73,21 +75,24 @@ const App: React.FC = () => {
     const co2 = vehicle.Valor * 0.02;
     const itbis = vehicle.Valor * 0.18;
     const gravamen = vehicle.Valor * 0.2;
-    const totalParcial = gravamen + itbis + co2;
-    const totalGeneral = totalParcial + placa;
+
+    // Total de impuestos (Gravamen + ITBIS + CO2)
+    const totalImpuestos = gravamen + itbis + co2;
+
+    // Total General = Valor del vehículo + todos los impuestos
+    const totalGeneral = vehicle.Valor + totalImpuestos + placa;
 
     return {
-      Placa: formatCurrency(placa),
-      CO2: formatCurrency(co2),
-      ITBIS: formatCurrency(itbis),
-      Gravamen: formatCurrency(gravamen),
-      TotalParcial: formatCurrency(totalParcial),
-      TotalGeneral: formatCurrency(totalGeneral),
+      Placa: placa,
+      CO2: co2,
+      ITBIS: itbis,
+      Gravamen: gravamen,
+      TotalImpuestos: totalImpuestos,
+      TotalGeneral: totalGeneral,
     };
   };
 
   const clearSelection = () => {
-    // Limpia la selección y los resultados
     setSelectedRowKeys([]);
     setSelectedVehicles([]);
   };
@@ -104,6 +109,17 @@ const App: React.FC = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
+
+  // Calcular los totales globales
+  const totalSummary = selectedVehicles.reduce(
+    (acc, vehicle) => {
+      const taxes = calculateTaxes(vehicle);
+      acc.totalImpuestos += taxes.TotalImpuestos;
+      acc.totalGeneral += taxes.TotalGeneral;
+      return acc;
+    },
+    { totalImpuestos: 0, totalGeneral: 0 }
+  );
 
   return (
     <div style={{ padding: "16px" }}>
@@ -131,10 +147,7 @@ const App: React.FC = () => {
         />
       </div>
       <div style={{ marginBottom: "16px" }}>
-        <Button
-          type="primary"
-          onClick={clearSelection} // Siempre limpia los resultados
-        >
+        <Button type="primary" onClick={clearSelection}>
           Limpiar resultados
         </Button>
         {selectedRowKeys.length > 0 && (
@@ -156,14 +169,26 @@ const App: React.FC = () => {
               <div key={index}>
                 <p>
                   <b>
-                    {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año})
+                    {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}){" "}
+                    {vehicle.Pais}
                   </b>
                 </p>
-                <p>Total Parcial: US {taxes.TotalParcial} </p>
-                <p>Total General: US {taxes.TotalGeneral} </p>
+                <p>Valor del vehículo: {formatCurrency(vehicle.Valor)}</p>
+                <p>
+                  Impuestos (Gravamen + ITBIS + CO2):{" "}
+                  {formatCurrency(taxes.TotalImpuestos)}
+                </p>
+                <p>Placa: {formatCurrency(taxes.Placa)}</p>
+                <p>
+                  <b>
+                    Total General (Incluye Valor e Impuestos):{" "}
+                    {formatCurrency(taxes.TotalGeneral)}
+                  </b>
+                </p>
               </div>
             );
           })}
+          <hr />
         </Card>
       )}
     </div>
