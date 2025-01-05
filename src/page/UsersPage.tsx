@@ -37,7 +37,7 @@ const App: React.FC = () => {
   const fetchData = async () => {
     try {
       const params = new URLSearchParams(
-        Object.entries(filters).filter(([key, value]) => value.trim() !== "")
+        Object.entries(filters).filter(([value]) => value.trim() !== "")
       );
       const response = await fetch(`http://localhost:3000/vehicles?${params}`);
       const result = await response.json();
