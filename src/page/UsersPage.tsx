@@ -33,7 +33,7 @@ const App: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
-  const [exchangeRate, setExchangeRate] = useState<number>(0); // Inicializar como 0
+  const [exchangeRate, setExchangeRate] = useState<number>(0);
 
   const fetchData = async () => {
     try {
@@ -131,7 +131,9 @@ const App: React.FC = () => {
   };
 
   return (
-    <div style={{ padding: "16px" }}>
+    <div
+      style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
+    >
       <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}>
         <Input
           placeholder="Buscar por Marca"
@@ -160,7 +162,7 @@ const App: React.FC = () => {
           Limpiar resultados
         </Button>
         {selectedRowKeys.length > 0 && (
-          <span style={{ marginLeft: "8px" }}>
+          <span style={{ marginLeft: "22px" }}>
             Vehículos seleccionados: {selectedRowKeys.length}
           </span>
         )}
@@ -189,6 +191,7 @@ const App: React.FC = () => {
                   {formatCurrency(taxes.TotalImpuestos)}
                 </p>
                 <p>Placa: {formatCurrency(taxes.Placa)}</p>
+
                 <p>
                   <b>
                     Total General (Incluye Valor e Impuestos):{" "}
@@ -198,10 +201,11 @@ const App: React.FC = () => {
                 <p>
                   <b>Precio en DOP: {priceInDOP}</b>
                 </p>
+                <hr></hr>
+                <br></br>
               </div>
             );
           })}
-          <hr />
         </Card>
       )}
     </div>
