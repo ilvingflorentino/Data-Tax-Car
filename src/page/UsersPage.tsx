@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Table, Card } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
-
+import { Checkbox } from "antd";
+import type { CheckboxProps } from "antd";
 type TableRowSelection<T extends object = object> =
   TableProps<T>["rowSelection"];
 
@@ -27,7 +28,9 @@ const columns: TableColumnsType<DataType> = [
   { title: "Pais", dataIndex: "Pais" },
   { title: "Especificaciones", dataIndex: "Especificaciones" },
 ];
-
+const onChange: CheckboxProps["onChange"] = (e) => {
+  console.log(`checked = ${e.target.checked}`);
+};
 const App: React.FC = () => {
   const [data, setData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -90,10 +93,10 @@ const App: React.FC = () => {
 
   const calculateTaxes = (vehicle: DataType) => {
     const placa = vehicle.Valor * 0.17;
-    const co2 = vehicle.Valor * 0.02;
+    const co2 = vehicle.Valor * 0.03;
     const itbis = vehicle.Valor * 0.18;
     const gravamen = vehicle.Valor * 0.2;
-
+    const marbete = 3000;
     const totalImpuestos = gravamen + itbis + co2;
     const totalGeneral = vehicle.Valor + totalImpuestos + placa;
 
@@ -104,6 +107,7 @@ const App: React.FC = () => {
       Gravamen: gravamen,
       TotalImpuestos: totalImpuestos,
       TotalGeneral: totalGeneral,
+      marbete: marbete,
     };
   };
 
@@ -129,7 +133,8 @@ const App: React.FC = () => {
     selectedRowKeys,
     onChange: onSelectChange,
   };
-
+  // estados unidos no paga gravamen
+  // precio por defaul o ingresado
   return (
     <div
       style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
@@ -166,6 +171,16 @@ const App: React.FC = () => {
             Vehículos seleccionados: {selectedRowKeys.length}
           </span>
         )}
+        <span style={{ padding: "10px" }}>Calculo de Co2.</span>
+        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
+          0.00
+        </Checkbox>
+        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
+          0.01
+        </Checkbox>
+        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
+          0.03
+        </Checkbox>
       </div>
       <Table<DataType>
         rowSelection={rowSelection}
@@ -186,12 +201,14 @@ const App: React.FC = () => {
                   </b>
                 </p>
                 <p>Valor del vehículo: {formatCurrency(vehicle.Valor)}</p>
-                <p>
-                  Impuestos (Gravamen + ITBIS + CO2):{" "}
-                  {formatCurrency(taxes.TotalImpuestos)}
-                </p>
+                <p>Gravamen ${taxes.Gravamen}</p>
+                <p>Itbis ${taxes.ITBIS}</p>
+                <p> C02 ${taxes.CO2}</p>
                 <p>Placa: {formatCurrency(taxes.Placa)}</p>
-
+                <p>Marbete: {taxes.marbete}</p>
+                <p>
+                  Total de Impuestos : {formatCurrency(taxes.TotalImpuestos)}
+                </p>
                 <p>
                   <b>
                     Total General (Incluye Valor e Impuestos):{" "}

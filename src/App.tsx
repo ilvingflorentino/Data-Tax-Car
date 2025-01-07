@@ -2,7 +2,7 @@ import UsersPage from "./page/UsersPage";
 
 export default function App() {
   return (
-    <div style={{ padding: "8px" }}>
+    <div style={{ padding: "9px" }}>
       <center>
         <h1>Data Tax Car 2024-2025</h1>
       </center>
