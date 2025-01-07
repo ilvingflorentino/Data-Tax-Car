@@ -20,7 +20,7 @@ const columns: TableColumnsType<DataType> = [
   { title: "Modelo", dataIndex: "Modelo" },
   { title: "Año", dataIndex: "Año" },
   {
-    title: "Valor",
+    title: "Valor (USD)",
     dataIndex: "Valor",
     render: (value: number) => new Intl.NumberFormat("en-US").format(value),
   },
@@ -33,11 +33,12 @@ const App: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
+  const [exchangeRate, setExchangeRate] = useState<number>(0); // Inicializar como 0
 
   const fetchData = async () => {
     try {
       const params = new URLSearchParams(
-        Object.entries(filters).filter(([value]) => value.trim() !== "")
+        Object.entries(filters).filter(([_, value]) => value.trim() !== "")
       );
       const response = await fetch(`http://localhost:3000/vehicles?${params}`);
       const result = await response.json();
@@ -53,20 +54,37 @@ const App: React.FC = () => {
             Especificaciones: item.Especificaciones,
           }))
         );
+      } else {
+        console.error("Error: No se obtuvieron los vehículos.");
       }
     } catch (error) {
-      console.error("Error fetching data:", error);
+      console.error("Error en la petición de vehículos:", error);
+    }
+  };
+
+  const fetchExchangeRate = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/exchange-rate");
+      const result = await response.json();
+      if (result.success && result.rate) {
+        setExchangeRate(result.rate);
+      } else {
+        console.error("Error: No se obtuvo una tasa de cambio válida.");
+      }
+    } catch (error) {
+      console.error("Error obteniendo la tasa de cambio:", error);
     }
   };
 
   useEffect(() => {
     fetchData();
+    fetchExchangeRate();
   }, [filters]);
 
-  const formatCurrency = (value: number) => {
+  const formatCurrency = (value: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency: "USD",
+      currency,
     }).format(value);
   };
 
@@ -76,10 +94,7 @@ const App: React.FC = () => {
     const itbis = vehicle.Valor * 0.18;
     const gravamen = vehicle.Valor * 0.2;
 
-    // Total de impuestos (Gravamen + ITBIS + CO2)
     const totalImpuestos = gravamen + itbis + co2;
-
-    // Total General = Valor del vehículo + todos los impuestos
     const totalGeneral = vehicle.Valor + totalImpuestos + placa;
 
     return {
@@ -90,6 +105,11 @@ const App: React.FC = () => {
       TotalImpuestos: totalImpuestos,
       TotalGeneral: totalGeneral,
     };
+  };
+
+  const calculatePriceInDOP = (priceInUSD: number) => {
+    if (exchangeRate === 0) return "Tasa de cambio no disponible";
+    return formatCurrency(priceInUSD * exchangeRate, "DOP");
   };
 
   const clearSelection = () => {
@@ -154,6 +174,7 @@ const App: React.FC = () => {
         <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
           {selectedVehicles.map((vehicle, index) => {
             const taxes = calculateTaxes(vehicle);
+            const priceInDOP = calculatePriceInDOP(taxes.TotalGeneral);
             return (
               <div key={index}>
                 <p>
@@ -173,6 +194,9 @@ const App: React.FC = () => {
                     Total General (Incluye Valor e Impuestos):{" "}
                     {formatCurrency(taxes.TotalGeneral)}
                   </b>
+                </p>
+                <p>
+                  <b>Precio en DOP: {priceInDOP}</b>
                 </p>
               </div>
             );
