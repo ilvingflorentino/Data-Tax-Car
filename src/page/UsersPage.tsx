@@ -1,8 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Table, Card } from "antd";
+import { Button, Input, Table, Card, InputNumber } from "antd";
 import type { TableColumnsType, TableProps } from "antd";
-import { Checkbox } from "antd";
-import type { CheckboxProps } from "antd";
+
 type TableRowSelection<T extends object = object> =
   TableProps<T>["rowSelection"];
 
@@ -16,27 +15,13 @@ interface DataType {
   Especificaciones: string;
 }
 
-const columns: TableColumnsType<DataType> = [
-  { title: "Marca", dataIndex: "Marca" },
-  { title: "Modelo", dataIndex: "Modelo" },
-  { title: "Año", dataIndex: "Año" },
-  {
-    title: "Valor (USD)",
-    dataIndex: "Valor",
-    render: (value: number) => new Intl.NumberFormat("en-US").format(value),
-  },
-  { title: "Pais", dataIndex: "Pais" },
-  { title: "Especificaciones", dataIndex: "Especificaciones" },
-];
-const onChange: CheckboxProps["onChange"] = (e) => {
-  console.log(`checked = ${e.target.checked}`);
-};
 const App: React.FC = () => {
   const [data, setData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
   const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [isEditing, setIsEditing] = useState(false);
 
   const fetchData = async () => {
     try {
@@ -91,23 +76,49 @@ const App: React.FC = () => {
     }).format(value);
   };
 
-  const calculateTaxes = (vehicle: DataType) => {
-    const placa = vehicle.Valor * 0.17;
-    const co2 = vehicle.Valor * 0.03;
-    const itbis = vehicle.Valor * 0.18;
-    const gravamen = vehicle.Valor * 0.2;
-    const marbete = 3000;
-    const totalImpuestos = gravamen + itbis + co2;
-    const totalGeneral = vehicle.Valor + totalImpuestos + placa;
+  const updateVehicleValue = (key: React.Key, newValue: number) => {
+    setData((prevData) =>
+      prevData.map((item) =>
+        item.key === key ? { ...item, Valor: newValue } : item
+      )
+    );
+  };
 
+  function refe() {
+    window.location.reload();
+  }
+  const calculateTaxes = (vehicle: DataType) => {
+    const fob = vehicle.Valor;
+    const cif = fob / 2;
+    const seguro = fob * 0.02;
+    const flete = fob * 0.03; // Ejemplo: 3% del FOB
+    const otros = fob * 0.01; // Ejemplo: 1% del FOB
+
+    // Gravamen: 20% del CIF (si no es de EE.UU.)
+    const gravamen =
+      vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS" ? 0 : cif * 0.2;
+
+    // ITBIS: 18% del CIF + Gravamen
+    const itbis = (fob + gravamen) * 0.18;
+    // CO2: 1% del CIF
+    const Co2 = fob * 0.01;
+    // Marbete: Valor fijo (RD$3,000)
+    const marbete = 3000;
+    // Total de Régimen: Gravamen + ITBIS
+    const Total_regimen = gravamen + itbis;
+    const placa = fob * 0.17;
     return {
-      Placa: placa,
-      CO2: co2,
-      ITBIS: itbis,
-      Gravamen: gravamen,
-      TotalImpuestos: totalImpuestos,
-      TotalGeneral: totalGeneral,
-      marbete: marbete,
+      FOB: formatCurrency(fob),
+      Cif: formatCurrency(cif),
+      Gravamen: formatCurrency(gravamen),
+      ITBIS: formatCurrency(itbis),
+      Co2: formatCurrency(Co2),
+      Placa: formatCurrency(placa),
+      Marbete: formatCurrency(marbete),
+      Total_regimen: formatCurrency(Total_regimen),
+      Seguro: formatCurrency(seguro),
+      Flete: formatCurrency(flete),
+      Otros: formatCurrency(otros),
     };
   };
 
@@ -132,9 +143,55 @@ const App: React.FC = () => {
   const rowSelection: TableRowSelection<DataType> = {
     selectedRowKeys,
     onChange: onSelectChange,
+    type: "radio",
   };
-  // estados unidos no paga gravamen
-  // precio por defaul o ingresado
+
+  const columns: TableColumnsType<DataType> = [
+    {
+      title: "Marca",
+      dataIndex: "Marca",
+      key: "Marca",
+    },
+    {
+      title: "Modelo",
+      dataIndex: "Modelo",
+      key: "Modelo",
+    },
+    {
+      title: "Año",
+      dataIndex: "Año",
+      key: "Año",
+    },
+    {
+      title: "Valor",
+      dataIndex: "Valor",
+      key: "Valor",
+      render: (value: number, record: DataType) => (
+        <InputNumber
+          value={value}
+          onChange={(newValue) =>
+            updateVehicleValue(record.key, newValue as number)
+          }
+          disabled={!isEditing}
+          formatter={(value) =>
+            value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
+          }
+          parser={(value) => parseFloat(value?.replace(/,/g, "") || "0")}
+        />
+      ),
+    },
+    {
+      title: "Pais",
+      dataIndex: "Pais",
+      key: "Pais",
+    },
+    {
+      title: "Especificaciones",
+      dataIndex: "Especificaciones",
+      key: "Especificaciones",
+    },
+  ];
+
   return (
     <div
       style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
@@ -166,21 +223,16 @@ const App: React.FC = () => {
         <Button type="primary" onClick={clearSelection}>
           Limpiar resultados
         </Button>
-        {selectedRowKeys.length > 0 && (
-          <span style={{ marginLeft: "22px" }}>
-            Vehículos seleccionados: {selectedRowKeys.length}
-          </span>
-        )}
-        <span style={{ padding: "10px" }}>Calculo de Co2.</span>
-        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
-          0.00
-        </Checkbox>
-        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
-          0.01
-        </Checkbox>
-        <Checkbox onChange={onChange} style={{ padding: "10px" }}>
-          0.03
-        </Checkbox>
+        <Button
+          type="primary"
+          style={{ marginLeft: "10px" }}
+          onClick={() => setIsEditing(!isEditing)}
+        >
+          {isEditing ? "Aceptar" : "Editar Precios"}
+        </Button>
+        <Button type="primary" style={{ marginLeft: "10px" }} onClick={refe}>
+          Valores Anteriores
+        </Button>
       </div>
       <Table<DataType>
         rowSelection={rowSelection}
@@ -196,30 +248,25 @@ const App: React.FC = () => {
               <div key={index}>
                 <p>
                   <b>
-                    {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}){" "}
+                    {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                     {vehicle.Pais}
                   </b>
                 </p>
-                <p>Valor del vehículo: {formatCurrency(vehicle.Valor)}</p>
-                <p>Gravamen ${taxes.Gravamen}</p>
-                <p>Itbis ${taxes.ITBIS}</p>
-                <p> C02 ${taxes.CO2}</p>
-                <p>Placa: {formatCurrency(taxes.Placa)}</p>
-                <p>Marbete: {taxes.marbete}</p>
-                <p>
-                  Total de Impuestos : {formatCurrency(taxes.TotalImpuestos)}
-                </p>
-                <p>
-                  <b>
-                    Total General (Incluye Valor e Impuestos):{" "}
-                    {formatCurrency(taxes.TotalGeneral)}
-                  </b>
-                </p>
+                <p>Fob {taxes.FOB}</p>
+                <p>Gravamen {taxes.Gravamen}</p>
+                <p>CIF {taxes.Cif}</p>
+                <p>Marbete {taxes.Marbete}</p>
+                <p>itbis {taxes.ITBIS}</p>
+                <p>Total Imp. y Regimen a Pagar: {taxes.Total_regimen}</p>
+                <p>Co2 {taxes.Co2}</p>
+                <p>Placa {taxes.Placa}</p>
+
+                <br></br>
+                <p>seguro {taxes.Seguro}</p>
                 <p>
                   <b>Precio en DOP: {priceInDOP}</b>
                 </p>
-                <hr></hr>
-                <br></br>
+                <hr />
               </div>
             );
           })}
