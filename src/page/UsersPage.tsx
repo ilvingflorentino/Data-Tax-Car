@@ -101,9 +101,14 @@ const App: React.FC = () => {
     const total_regimen = gravamen + itbis;
     const co2 = cif_total * 0.01;
     const placa = cif_total * 0.17;
-    const servicioAduanero = cifRD * 5.343;
-    const DeclaracionAduanas = 258.26;
-    const Aduanero = DeclaracionAduanas + servicioAduanero;
+    // Tasa Servicio Aduanero
+    const tasaServicioAduanero = (cif_total / 2) * 0.05343;
+
+    // Declaración Aduanas
+    const declaracionAduanas = 258.26;
+
+    // Aduanero Total
+    const Aduanero = tasaServicioAduanero + declaracionAduanas;
 
     // Resultados en la moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
@@ -119,9 +124,9 @@ const App: React.FC = () => {
       Total_regimen: formatCurrency(total_regimen * rate, currency),
       Co2: formatCurrency(co2 * rate, currency),
       Placa: formatCurrency(placa * rate, currency),
-      servicioAduanero: formatCurrency(servicioAduanero * rate, currency),
+      servicioAduanero: formatCurrency(tasaServicioAduanero * rate, currency),
       cifRD: formatCurrency(cifRD * rate, currency),
-      DeclaracionAduanas: formatCurrency(DeclaracionAduanas * rate, currency),
+      DeclaracionAduanas: formatCurrency(declaracionAduanas * rate, currency),
       Aduanero: formatCurrency(Aduanero * rate, currency),
     };
   };
@@ -258,16 +263,16 @@ const App: React.FC = () => {
                 <p>Seguro: {taxes.Seguro}</p>
                 <p>Flete: {taxes.Flete}</p>
                 <p>Otros: {taxes.Otros}</p>
-                <p>CIF ADU. {taxes.CIF}</p>
-                <p>CIF RD: {taxes.cifRD}</p>
+                <p>CIF: {taxes.CIF}</p>
+                <p>Total Monto Liberado del CIF:{taxes.cifRD}</p>
                 <p>Gravamen: {taxes.Gravamen}</p>
                 <p>ITBIS: {taxes.ITBIS}</p>
-                <p>Total impuesto y Régimen: {taxes.Total_regimen}</p>
+                <p>Total Régimen: {taxes.Total_regimen}</p>
                 <p>CO2: {taxes.Co2}</p>
                 <p>Placa: {taxes.Placa}</p>
                 <p>Servicio Aduanero: {taxes.servicioAduanero}</p>
-                <p>Declaración de Aduanas: {taxes.DeclaracionAduanas}</p>
-                <p>Aduanero: {taxes.Aduanero}</p>
+                <p>Declaración Aduanas: {taxes.DeclaracionAduanas}</p>
+                <p>Aduanero Total: {taxes.Aduanero}</p>
                 <hr />
               </div>
             );
