@@ -88,37 +88,87 @@ const App: React.FC = () => {
     window.location.reload();
   }
   const calculateTaxes = (vehicle: DataType) => {
-    const fob = vehicle.Valor;
-    const cif = fob / 2;
-    const seguro = fob * 0.02;
-    const flete = fob * 0.03; // Ejemplo: 3% del FOB
-    const otros = fob * 0.01; // Ejemplo: 1% del FOB
+    const fob = vehicle.Valor; // Valor FOB del vehículo.
 
-    // Gravamen: 20% del CIF (si no es de EE.UU.)
-    const gravamen =
-      vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS" ? 0 : cif * 0.2;
+    // Seguro: $85.40 (valor fijo en el reporte)
+    const seguro = 85.4;
 
-    // ITBIS: 18% del CIF + Gravamen
-    const itbis = (fob + gravamen) * 0.18;
-    // CO2: 1% del CIF
-    const Co2 = fob * 0.01;
-    // Marbete: Valor fijo (RD$3,000)
-    const marbete = 3000;
-    // Total de Régimen: Gravamen + ITBIS
-    const Total_regimen = gravamen + itbis;
-    const placa = fob * 0.17;
+    // Flete: $800.00 (valor fijo en el reporte)
+    const flete = 800.0;
+
+    // Otros: $350.00 (valor fijo en el reporte)
+    const otros = 350.0;
+
+    // CIF dolares: FOB + Seguro + Flete + Otros
+    const cif_total = fob + seguro + flete + otros;
+    //Sacando mitad del fob da el CIF
+    const cifRd = cif_total / 2;
+    const resul = cifRd * 59.54;
+    // Gravamen: 20% del CIF
+    const isFromUSA = vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS";
+    const gravamen = isFromUSA ? 0.0 : cifRd * 0.2;
+    const resul1 = gravamen * 59.54;
+    // ITBIS: 18% de (CIF + Gravamen)
+    const itbis = (cif_total + gravamen) * 0.18;
+    const resul2 = itbis * 59.54;
+    // CO2: $3,277.83 (1% del CIF total, confirmado en la hoja)
+
+    const co2 = gravamen * 0.01;
+
+    // Formateo del CO2 a dólares
+    const formattedCo2 = co2.toLocaleString("en-US", {
+      style: "currency",
+      currency: "USD",
+    });
+    const recoverCo2 = Number(co2);
+
+    const resul3 = co2 * 59.54; // Tasa de cambio
+    const formattedResul3 = resul3.toLocaleString("en-US", {
+      style: "currency",
+      currency: "DOP",
+    });
+    // Placa: 17% del CIF
+    const placa = cif_total * 0.17;
+    const resul5 = placa * 59.54;
+    //Simplemente al número le haces esto:
+    //const result = resul3.toLocaleString();
+
+    // Marbete: RD$3,000.00 (valor fijo)
+    const marbete = 3000.0;
+
+    // Total de Impuestos y Régimen a Pagar: Gravamen + ITBIS
+    const total_regimen = gravamen + itbis;
+    const resul4 = total_regimen * 59.54;
+
+    // Balance a pagar por servicio aduanero: Tasa Servicio Aduanero ($8,756.31) + Declaración Única Aduanera ($258.26)
+    const tasa_servicio_aduanero = 8756.31;
+    const declaracion_unica_aduanera = 258.26;
+    const balance_servicio_aduanero =
+      tasa_servicio_aduanero + declaracion_unica_aduanera;
+
     return {
       FOB: formatCurrency(fob),
-      Cif: formatCurrency(cif),
-      Gravamen: formatCurrency(gravamen),
-      ITBIS: formatCurrency(itbis),
-      Co2: formatCurrency(Co2),
-      Placa: formatCurrency(placa),
-      Marbete: formatCurrency(marbete),
-      Total_regimen: formatCurrency(Total_regimen),
+      CIF: formatCurrency(cif_total),
       Seguro: formatCurrency(seguro),
       Flete: formatCurrency(flete),
       Otros: formatCurrency(otros),
+      Gravamen: formatCurrency(gravamen),
+      ITBIS: formatCurrency(itbis),
+      Co2: formattedCo2, // Formateado como USD
+      Co2EnPesos: formattedResul3, // Formateado como DOP
+      Placa: formatCurrency(placa),
+      Marbete: formatCurrency(marbete),
+      Total_regimen: formatCurrency(total_regimen),
+      Tasa_Servicio_Aduanero: formatCurrency(tasa_servicio_aduanero),
+      Declaracion_Unica_Aduanera: formatCurrency(declaracion_unica_aduanera),
+      Balance_Servicio_Aduanero: formatCurrency(balance_servicio_aduanero),
+      cifRd: formatCurrency(cifRd),
+      result: formatCurrency(resul),
+      result1: formatCurrency(resul1),
+      result2: formatCurrency(resul2),
+      result3: formatCurrency(resul3),
+      result4: formatCurrency(resul4),
+      resul5: formatCurrency(resul5),
     };
   };
 
@@ -252,17 +302,20 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-                <p>Fob {taxes.FOB}</p>
-                <p>Gravamen {taxes.Gravamen}</p>
-                <p>CIF {taxes.Cif}</p>
-                <p>Marbete {taxes.Marbete}</p>
-                <p>itbis {taxes.ITBIS}</p>
-                <p>Total Imp. y Regimen a Pagar: {taxes.Total_regimen}</p>
-                <p>Co2 {taxes.Co2}</p>
-                <p>Placa {taxes.Placa}</p>
 
-                <br></br>
+                <p>Fob {taxes.FOB}</p>
                 <p>seguro {taxes.Seguro}</p>
+                <p>Marbete {taxes.Marbete}</p>
+                <p>Placa {taxes.resul5}</p>
+                <p>Flete {taxes.Flete}</p>
+                <p>otros {taxes.Otros}</p>
+                <p>CIF US {taxes.CIF}</p>
+                <p>CIF RD {taxes.result}</p>
+                <p>Gravamen {taxes.result1}</p>
+                <p>itbis {taxes.result2}</p>
+                <p>Total Imp. y Regimen a Pagar: {taxes.result4}</p>
+                <br></br>
+                <p>Co2 {taxes.Co2EnPesos}</p>
                 <p>
                   <b>Precio en DOP: {priceInDOP}</b>
                 </p>
