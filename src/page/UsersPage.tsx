@@ -20,8 +20,9 @@ const App: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
-  const [exchangeRate, setExchangeRate] = useState<number>(0);
+  const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
   const [isEditing, setIsEditing] = useState(false);
+  const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
 
   const fetchData = async () => {
     try {
@@ -87,94 +88,42 @@ const App: React.FC = () => {
   function refe() {
     window.location.reload();
   }
+
   const calculateTaxes = (vehicle: DataType) => {
-    const fob = vehicle.Valor; // Valor FOB del vehículo.
-
-    // Seguro: $85.40 (valor fijo en el reporte)
+    const fob = vehicle.Valor;
     const seguro = 85.4;
-
-    // Flete: $800.00 (valor fijo en el reporte)
     const flete = 800.0;
-
-    // Otros: $350.00 (valor fijo en el reporte)
     const otros = 350.0;
-
-    // CIF dolares: FOB + Seguro + Flete + Otros
     const cif_total = fob + seguro + flete + otros;
-    //Sacando mitad del fob da el CIF
-    const cifRd = cif_total / 2;
-    const resul = cifRd * 59.54;
-    // Gravamen: 20% del CIF
-    const isFromUSA = vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS";
-    const gravamen = isFromUSA ? 0.0 : cifRd * 0.2;
-    const resul1 = gravamen * 59.54;
-    // ITBIS: 18% de (CIF + Gravamen)
+    const cifRD = cif_total / 2;
+    const gravamen = cif_total * 0.1;
     const itbis = (cif_total + gravamen) * 0.18;
-    const resul2 = itbis * 59.54;
-    // CO2: $3,277.83 (1% del CIF total, confirmado en la hoja)
-
-    const co2 = gravamen * 0.01;
-
-    // Formateo del CO2 a dólares
-    const formattedCo2 = co2.toLocaleString("en-US", {
-      style: "currency",
-      currency: "USD",
-    });
-    const recoverCo2 = Number(co2);
-
-    const resul3 = co2 * 59.54; // Tasa de cambio
-    const formattedResul3 = resul3.toLocaleString("en-US", {
-      style: "currency",
-      currency: "DOP",
-    });
-    // Placa: 17% del CIF
-    const placa = cif_total * 0.17;
-    const resul5 = placa * 59.54;
-    //Simplemente al número le haces esto:
-    //const result = resul3.toLocaleString();
-
-    // Marbete: RD$3,000.00 (valor fijo)
-    const marbete = 3000.0;
-
-    // Total de Impuestos y Régimen a Pagar: Gravamen + ITBIS
     const total_regimen = gravamen + itbis;
-    const resul4 = total_regimen * 59.54;
+    const co2 = cif_total * 0.01;
+    const placa = cif_total * 0.17;
+    const servicioAduanero = cifRD * 5.343;
+    const DeclaracionAduanas = 258.26;
+    const Aduanero = DeclaracionAduanas + servicioAduanero;
 
-    // Balance a pagar por servicio aduanero: Tasa Servicio Aduanero ($8,756.31) + Declaración Única Aduanera ($258.26)
-    const tasa_servicio_aduanero = 8756.31;
-    const declaracion_unica_aduanera = 258.26;
-    const balance_servicio_aduanero =
-      tasa_servicio_aduanero + declaracion_unica_aduanera;
-
+    // Resultados en la moneda seleccionada
+    const rate = isUSD ? 1 : exchangeRate;
+    const currency = isUSD ? "USD" : "DOP";
     return {
-      FOB: formatCurrency(fob),
-      CIF: formatCurrency(cif_total),
-      Seguro: formatCurrency(seguro),
-      Flete: formatCurrency(flete),
-      Otros: formatCurrency(otros),
-      Gravamen: formatCurrency(gravamen),
-      ITBIS: formatCurrency(itbis),
-      Co2: formattedCo2, // Formateado como USD
-      Co2EnPesos: formattedResul3, // Formateado como DOP
-      Placa: formatCurrency(placa),
-      Marbete: formatCurrency(marbete),
-      Total_regimen: formatCurrency(total_regimen),
-      Tasa_Servicio_Aduanero: formatCurrency(tasa_servicio_aduanero),
-      Declaracion_Unica_Aduanera: formatCurrency(declaracion_unica_aduanera),
-      Balance_Servicio_Aduanero: formatCurrency(balance_servicio_aduanero),
-      cifRd: formatCurrency(cifRd),
-      result: formatCurrency(resul),
-      result1: formatCurrency(resul1),
-      result2: formatCurrency(resul2),
-      result3: formatCurrency(resul3),
-      result4: formatCurrency(resul4),
-      resul5: formatCurrency(resul5),
+      FOB: formatCurrency(fob * rate, currency),
+      CIF: formatCurrency(cif_total * rate, currency),
+      Seguro: formatCurrency(seguro * rate, currency),
+      Flete: formatCurrency(flete * rate, currency),
+      Otros: formatCurrency(otros * rate, currency),
+      Gravamen: formatCurrency(gravamen * rate, currency),
+      ITBIS: formatCurrency(itbis * rate, currency),
+      Total_regimen: formatCurrency(total_regimen * rate, currency),
+      Co2: formatCurrency(co2 * rate, currency),
+      Placa: formatCurrency(placa * rate, currency),
+      servicioAduanero: formatCurrency(servicioAduanero * rate, currency),
+      cifRD: formatCurrency(cifRD * rate, currency),
+      DeclaracionAduanas: formatCurrency(DeclaracionAduanas * rate, currency),
+      Aduanero: formatCurrency(Aduanero * rate, currency),
     };
-  };
-
-  const calculatePriceInDOP = (priceInUSD: number) => {
-    if (exchangeRate === 0) return "Tasa de cambio no disponible";
-    return formatCurrency(priceInUSD * exchangeRate, "DOP");
   };
 
   const clearSelection = () => {
@@ -246,6 +195,7 @@ const App: React.FC = () => {
     <div
       style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
     >
+      <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}></div>
       <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}>
         <Input
           placeholder="Buscar por Marca"
@@ -289,11 +239,13 @@ const App: React.FC = () => {
         columns={columns}
         dataSource={data}
       />
+      <Button type="primary" onClick={() => setIsUSD(!isUSD)}>
+        {isUSD ? "Calcular en Pesos Dominicanos" : "Calcular en Dólares"}
+      </Button>
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
           {selectedVehicles.map((vehicle, index) => {
             const taxes = calculateTaxes(vehicle);
-            const priceInDOP = calculatePriceInDOP(taxes.TotalGeneral);
             return (
               <div key={index}>
                 <p>
@@ -302,23 +254,20 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-
-                <p>Fob {taxes.FOB}</p>
-                <p>seguro {taxes.Seguro}</p>
-                <p>Marbete {taxes.Marbete}</p>
-                <p>Placa {taxes.resul5}</p>
-                <p>Flete {taxes.Flete}</p>
-                <p>otros {taxes.Otros}</p>
-                <p>CIF US {taxes.CIF}</p>
-                <p>CIF RD {taxes.result}</p>
-                <p>Gravamen {taxes.result1}</p>
-                <p>itbis {taxes.result2}</p>
-                <p>Total Imp. y Regimen a Pagar: {taxes.result4}</p>
-                <br></br>
-                <p>Co2 {taxes.Co2EnPesos}</p>
-                <p>
-                  <b>Precio en DOP: {priceInDOP}</b>
-                </p>
+                <p>FOB: {taxes.FOB}</p>
+                <p>Seguro: {taxes.Seguro}</p>
+                <p>Flete: {taxes.Flete}</p>
+                <p>Otros: {taxes.Otros}</p>
+                <p>CIF ADU. {taxes.CIF}</p>
+                <p>CIF RD: {taxes.cifRD}</p>
+                <p>Gravamen: {taxes.Gravamen}</p>
+                <p>ITBIS: {taxes.ITBIS}</p>
+                <p>Total impuesto y Régimen: {taxes.Total_regimen}</p>
+                <p>CO2: {taxes.Co2}</p>
+                <p>Placa: {taxes.Placa}</p>
+                <p>Servicio Aduanero: {taxes.servicioAduanero}</p>
+                <p>Declaración de Aduanas: {taxes.DeclaracionAduanas}</p>
+                <p>Aduanero: {taxes.Aduanero}</p>
                 <hr />
               </div>
             );
