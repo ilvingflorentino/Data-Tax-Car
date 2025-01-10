@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Button, Input, Table, Card, InputNumber } from "antd";
-import type { TableColumnsType } from "antd";
+import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 
 interface DataType {
   key: React.Key;
@@ -19,6 +18,8 @@ const App: React.FC = () => {
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
   const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
   const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
+  const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
+  const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
 
   const fetchData = async () => {
     try {
@@ -47,24 +48,14 @@ const App: React.FC = () => {
     }
   };
 
-  const fetchExchangeRate = async () => {
-    try {
-      const response = await fetch("http://localhost:3000/exchange-rate");
-      const result = await response.json();
-      if (result.success && result.rate) {
-        setExchangeRate(result.rate);
-      } else {
-        console.error("Error: No se obtuvo una tasa de cambio válida.");
-      }
-    } catch (error) {
-      console.error("Error obteniendo la tasa de cambio:", error);
-    }
-  };
-
   useEffect(() => {
     fetchData();
-    fetchExchangeRate();
   }, [filters]);
+
+  useEffect(() => {
+    // Recalcular automáticamente cuando cambien las tasas seleccionadas
+    setSelectedVehicles((prevVehicles) => [...prevVehicles]);
+  }, [gravamenRate, co2Rate]);
 
   const formatCurrency = (value: number, currency: string = "USD") => {
     return new Intl.NumberFormat("en-US", {
@@ -72,6 +63,7 @@ const App: React.FC = () => {
       currency,
     }).format(value);
   };
+
   const updateFOB = (vehicleKey: React.Key, newValue: number) => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) =>
@@ -79,17 +71,6 @@ const App: React.FC = () => {
       )
     );
   };
-  const updateVehicleValue = (key: React.Key, newValue: number) => {
-    setData((prevData) =>
-      prevData.map((item) =>
-        item.key === key ? { ...item, Valor: newValue } : item
-      )
-    );
-  };
-
-  function refe() {
-    window.location.reload();
-  }
 
   const calculateTaxes = (vehicle: DataType) => {
     const fob = vehicle.Valor;
@@ -99,11 +80,20 @@ const App: React.FC = () => {
     const cif_total = fob + seguro + flete + otros;
     const cifRD = cif_total / 2;
 
+    // Gravamen dinámico
     const gravamen =
       vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS" ? 0 : cif_total * 0.1;
+
+    // ITBIS
     const itbis = (cif_total + gravamen) * 0.18;
+
+    // Total Régimen
     const total_regimen = gravamen + itbis;
-    const co2 = cif_total * 0.01;
+
+    // CO2 dinámico
+    const co2 = cif_total * co2Rate;
+
+    // Placa
     const placa = cif_total * 0.17;
 
     // Tasa Servicio Aduanero fija
@@ -140,68 +130,25 @@ const App: React.FC = () => {
       Total_regimen: formatCurrency(total_regimen * rate, currency),
       Co2: formatCurrency(co2 * rate, currency),
       Placa: formatCurrency(placa * rate, currency),
-      servicioAduanero: formatCurrency(tasaServicioAduanero),
+      servicioAduanero: formatCurrency(tasaServicioAduanero, currency),
       cifRD: formatCurrency(cifRD * rate, currency),
-      DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
+      DeclaracionAduanas: formatCurrency(declaracionAduanas, currency), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
     };
   };
 
+  function refe() {
+    window.location.reload();
+  }
   const clearSelection = () => {
     setSelectedRowKeys([]);
     setSelectedVehicles([]);
   };
 
-  const columns: TableColumnsType<DataType> = [
-    {
-      title: "Marca",
-      dataIndex: "Marca",
-      key: "Marca",
-    },
-    {
-      title: "Modelo",
-      dataIndex: "Modelo",
-      key: "Modelo",
-    },
-    {
-      title: "Año",
-      dataIndex: "Año",
-      key: "Año",
-    },
-    {
-      title: "Valor",
-      dataIndex: "Valor",
-      key: "Valor",
-      render: (value: number, record: DataType) => (
-        <InputNumber
-          value={value}
-          onChange={(newValue) =>
-            updateVehicleValue(record.key, newValue as number)
-          }
-          formatter={(value) =>
-            value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
-          }
-          parser={(value) => parseFloat(value?.replace(/,/g, "") || "0")}
-        />
-      ),
-    },
-    {
-      title: "Pais",
-      dataIndex: "Pais",
-      key: "Pais",
-    },
-    {
-      title: "Especificaciones",
-      dataIndex: "Especificaciones",
-      key: "Especificaciones",
-    },
-  ];
-
   return (
     <div
       style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
     >
-      <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}></div>
       <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}>
         <Input
           placeholder="Buscar por Marca"
@@ -255,6 +202,26 @@ const App: React.FC = () => {
         <Button type="primary" style={{ marginLeft: "12px" }} onClick={refe}>
           Valores Anteriores
         </Button>
+
+        <Select
+          style={{ width: 150, marginLeft: "12px" }}
+          defaultValue="0.10"
+          onChange={(value) => setGravamenRate(parseFloat(value))}
+        >
+          <Select.Option value="0.10">Gravamen 10%</Select.Option>
+          <Select.Option value="0.20">Gravamen 20%</Select.Option>
+          <Select.Option value="0.30">Gravamen 30%</Select.Option>
+        </Select>
+
+        <Select
+          style={{ width: 150, marginLeft: "10px" }}
+          defaultValue="0.01"
+          onChange={(value) => setCo2Rate(parseFloat(value))}
+        >
+          <Select.Option value="0.01">Co2 1%</Select.Option>
+          <Select.Option value="0.02">Co2 2%</Select.Option>
+          <Select.Option value="0.03">Co2 3%</Select.Option>
+        </Select>
         <Button
           style={{ marginLeft: "12px" }}
           type="primary"
@@ -263,7 +230,6 @@ const App: React.FC = () => {
           {isUSD ? "Calcular en Pesos Dominicanos" : "Calcular en Dólares"}
         </Button>
       </div>
-
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
           {selectedVehicles.map((vehicle, index) => {
@@ -293,19 +259,18 @@ const App: React.FC = () => {
                     }
                   />
                 </p>
-                <p>Total FOB {taxes.FOB}</p>
                 <p>Seguro: {taxes.Seguro}</p>
                 <p>Flete: {taxes.Flete}</p>
                 <p>Otros: {taxes.Otros}</p>
-                <p>Total CIF : {taxes.CIF}</p>
-                <p>Total Monto Liberado del CIF:{taxes.cifRD}</p>
+                <p>Total CIF: {taxes.CIF}</p>
+                <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
                 <p>Gravamen: {taxes.Gravamen}</p>
                 <p>ITBIS: {taxes.ITBIS}</p>
-                <p>Total Imp. y Regimen a Pagar: {taxes.Total_regimen}</p>
+                <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
                 <p>CO2: {taxes.Co2}</p>
                 <p>Placa: {taxes.Placa}</p>
                 <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
-                <p>Declaración Unica Aduanera: {taxes.DeclaracionAduanas}</p>
+                <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
                 <p>Aduanero Total: {taxes.Aduanero}</p>
                 <hr />
               </div>
