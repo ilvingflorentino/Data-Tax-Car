@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
-import type { TableColumnsType, TableProps } from "antd";
+import type { TableColumnsType } from "antd";
 
 interface DataType {
   key: React.Key;
@@ -269,7 +269,21 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-                <p>Total FOB: {taxes.FOB}</p>
+                Total FOB En US{" "}
+                <InputNumber
+                  value={vehicle.Valor}
+                  onChange={(newValue) =>
+                    updateFOB(vehicle.key, newValue as number)
+                  }
+                  formatter={(value) =>
+                    value
+                      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      : ""
+                  }
+                  parser={(value) =>
+                    parseFloat(value?.replace(/,/g, "") || "0")
+                  }
+                />
                 <p>Seguro: {taxes.Seguro}</p>
                 <p>Flete: {taxes.Flete}</p>
                 <p>Otros: {taxes.Otros}</p>
