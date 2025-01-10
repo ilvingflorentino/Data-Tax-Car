@@ -96,7 +96,9 @@ const App: React.FC = () => {
     const otros = 350.0;
     const cif_total = fob + seguro + flete + otros;
     const cifRD = cif_total / 2;
-    const gravamen = cif_total * 0.1;
+
+    const gravamen =
+      vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS" ? 0 : cif_total * 0.1;
     const itbis = (cif_total + gravamen) * 0.18;
     const total_regimen = gravamen + itbis;
     const co2 = cif_total * 0.01;
@@ -136,7 +138,7 @@ const App: React.FC = () => {
       Total_regimen: formatCurrency(total_regimen * rate, currency),
       Co2: formatCurrency(co2 * rate, currency),
       Placa: formatCurrency(placa * rate, currency),
-      servicioAduanero: formatCurrency(tasaServicioAduanero * rate, currency),
+      servicioAduanero: formatCurrency(tasaServicioAduanero),
       cifRD: formatCurrency(cifRD * rate, currency),
       DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
@@ -236,6 +238,12 @@ const App: React.FC = () => {
           }
         />
       </div>
+
+      <Table<DataType>
+        rowSelection={rowSelection}
+        columns={columns}
+        dataSource={data}
+      />
       <div style={{ marginBottom: "16px" }}>
         <Button type="primary" onClick={clearSelection}>
           Limpiar resultados
@@ -247,18 +255,18 @@ const App: React.FC = () => {
         >
           {isEditing ? "Aceptar" : "Editar Precios"}
         </Button>
-        <Button type="primary" style={{ marginLeft: "10px" }} onClick={refe}>
+        <Button type="primary" style={{ marginLeft: "12px" }} onClick={refe}>
           Valores Anteriores
         </Button>
+        <Button
+          style={{ marginLeft: "12px" }}
+          type="primary"
+          onClick={() => setIsUSD(!isUSD)}
+        >
+          {isUSD ? "Calcular en Pesos Dominicanos" : "Calcular en Dólares"}
+        </Button>
       </div>
-      <Table<DataType>
-        rowSelection={rowSelection}
-        columns={columns}
-        dataSource={data}
-      />
-      <Button type="primary" onClick={() => setIsUSD(!isUSD)}>
-        {isUSD ? "Calcular en Pesos Dominicanos" : "Calcular en Dólares"}
-      </Button>
+
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
           {selectedVehicles.map((vehicle, index) => {
