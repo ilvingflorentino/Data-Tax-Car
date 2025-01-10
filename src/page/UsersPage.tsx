@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Table, Card, InputNumber } from "antd";
-import type { TableColumnsType, TableProps } from "antd";
-
-type TableRowSelection<T extends object = object> =
-  TableProps<T>["rowSelection"];
+import type { TableColumnsType } from "antd";
 
 interface DataType {
   key: React.Key;
@@ -21,7 +18,6 @@ const App: React.FC = () => {
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
   const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
-  const [isEditing, setIsEditing] = useState(false);
   const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
 
   const fetchData = async () => {
@@ -76,7 +72,13 @@ const App: React.FC = () => {
       currency,
     }).format(value);
   };
-
+  const updateFOB = (vehicleKey: React.Key, newValue: number) => {
+    setSelectedVehicles((prevVehicles) =>
+      prevVehicles.map((vehicle) =>
+        vehicle.key === vehicleKey ? { ...vehicle, Valor: newValue } : vehicle
+      )
+    );
+  };
   const updateVehicleValue = (key: React.Key, newValue: number) => {
     setData((prevData) =>
       prevData.map((item) =>
@@ -150,20 +152,6 @@ const App: React.FC = () => {
     setSelectedVehicles([]);
   };
 
-  const onSelectChange = (newSelectedRowKeys: React.Key[]) => {
-    setSelectedRowKeys(newSelectedRowKeys);
-    const selected = data.filter((item) =>
-      newSelectedRowKeys.includes(item.key)
-    );
-    setSelectedVehicles(selected);
-  };
-
-  const rowSelection: TableRowSelection<DataType> = {
-    selectedRowKeys,
-    onChange: onSelectChange,
-    type: "radio",
-  };
-
   const columns: TableColumnsType<DataType> = [
     {
       title: "Marca",
@@ -190,7 +178,6 @@ const App: React.FC = () => {
           onChange={(newValue) =>
             updateVehicleValue(record.key, newValue as number)
           }
-          disabled={!isEditing}
           formatter={(value) =>
             value ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",") : ""
           }
@@ -240,21 +227,31 @@ const App: React.FC = () => {
       </div>
 
       <Table<DataType>
-        rowSelection={rowSelection}
-        columns={columns}
+        rowSelection={{
+          selectedRowKeys,
+          onChange: (newSelectedRowKeys) => {
+            setSelectedRowKeys(newSelectedRowKeys);
+            const selected = data.filter((item) =>
+              newSelectedRowKeys.includes(item.key)
+            );
+            setSelectedVehicles(selected);
+          },
+          type: "radio",
+        }}
+        columns={[
+          { title: "Marca", dataIndex: "Marca", key: "Marca" },
+          { title: "Modelo", dataIndex: "Modelo", key: "Modelo" },
+          { title: "Valor", dataIndex: "Valor", key: "Valor" },
+          { title: "Año", dataIndex: "Año", key: "Año" },
+          { title: "Pais", dataIndex: "Pais", key: "Pais" },
+        ]}
         dataSource={data}
       />
       <div style={{ marginBottom: "16px" }}>
         <Button type="primary" onClick={clearSelection}>
           Limpiar resultados
         </Button>
-        <Button
-          type="primary"
-          style={{ marginLeft: "10px" }}
-          onClick={() => setIsEditing(!isEditing)}
-        >
-          {isEditing ? "Aceptar" : "Editar Precios"}
-        </Button>
+
         <Button type="primary" style={{ marginLeft: "12px" }} onClick={refe}>
           Valores Anteriores
         </Button>
@@ -278,6 +275,23 @@ const App: React.FC = () => {
                     {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                     {vehicle.Pais}
                   </b>
+                </p>
+                <p>
+                  Total FOB En US{" "}
+                  <InputNumber
+                    value={vehicle.Valor}
+                    onChange={(newValue) =>
+                      updateFOB(vehicle.key, newValue as number)
+                    }
+                    formatter={(value) =>
+                      value
+                        ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        : ""
+                    }
+                    parser={(value) =>
+                      parseFloat(value?.replace(/,/g, "") || "0")
+                    }
+                  />
                 </p>
                 <p>Total FOB {taxes.FOB}</p>
                 <p>Seguro: {taxes.Seguro}</p>
