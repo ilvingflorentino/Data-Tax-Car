@@ -91,7 +91,7 @@ const App: React.FC = () => {
 
   const calculateTaxes = (vehicle: DataType) => {
     const fob = vehicle.Valor;
-    const seguro = 85.4;
+    const seguro = fob * 0.02;
     const flete = 800.0;
     const otros = 350.0;
     const cif_total = fob + seguro + flete + otros;
@@ -101,18 +101,30 @@ const App: React.FC = () => {
     const total_regimen = gravamen + itbis;
     const co2 = cif_total * 0.01;
     const placa = cif_total * 0.17;
-    // Tasa Servicio Aduanero
-    const tasaServicioAduanero = (cif_total / 2) * 0.05343;
 
-    // Declaración Aduanas
-    const declaracionAduanas = 258.26;
+    // Tasa Servicio Aduanero fija
+    const tasaServicioAduaneroDOP = 8756.31; // Siempre en RD$
+
+    // Convertir a USD si es necesario
+    const tasaServicioAduanero = isUSD
+      ? tasaServicioAduaneroDOP / exchangeRate // Convertir a dólares
+      : tasaServicioAduaneroDOP; // Mantener en pesos
+
+    // Declaración Aduanas fija en RD$
+    const declaracionAduanasDOP = 258.26; // Siempre en RD$
+
+    // Convertir a USD si es necesario
+    const declaracionAduanas = isUSD
+      ? declaracionAduanasDOP / exchangeRate
+      : declaracionAduanasDOP;
 
     // Aduanero Total
-    const Aduanero = tasaServicioAduanero + declaracionAduanas;
+    const aduaneroTotal = tasaServicioAduanero + declaracionAduanas;
 
-    // Resultados en la moneda seleccionada
+    // Moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
     const currency = isUSD ? "USD" : "DOP";
+
     return {
       FOB: formatCurrency(fob * rate, currency),
       CIF: formatCurrency(cif_total * rate, currency),
@@ -126,8 +138,8 @@ const App: React.FC = () => {
       Placa: formatCurrency(placa * rate, currency),
       servicioAduanero: formatCurrency(tasaServicioAduanero * rate, currency),
       cifRD: formatCurrency(cifRD * rate, currency),
-      DeclaracionAduanas: formatCurrency(declaracionAduanas * rate, currency),
-      Aduanero: formatCurrency(Aduanero * rate, currency),
+      DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
+      Aduanero: formatCurrency(aduaneroTotal, currency),
     };
   };
 
@@ -259,19 +271,19 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-                <p>FOB: {taxes.FOB}</p>
+                <p>Total FOB {taxes.FOB}</p>
                 <p>Seguro: {taxes.Seguro}</p>
                 <p>Flete: {taxes.Flete}</p>
                 <p>Otros: {taxes.Otros}</p>
-                <p>CIF: {taxes.CIF}</p>
+                <p>Total CIF : {taxes.CIF}</p>
                 <p>Total Monto Liberado del CIF:{taxes.cifRD}</p>
                 <p>Gravamen: {taxes.Gravamen}</p>
                 <p>ITBIS: {taxes.ITBIS}</p>
-                <p>Total Régimen: {taxes.Total_regimen}</p>
+                <p>Total Imp. y Regimen a Pagar: {taxes.Total_regimen}</p>
                 <p>CO2: {taxes.Co2}</p>
                 <p>Placa: {taxes.Placa}</p>
-                <p>Servicio Aduanero: {taxes.servicioAduanero}</p>
-                <p>Declaración Aduanas: {taxes.DeclaracionAduanas}</p>
+                <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
+                <p>Declaración Unica Aduanera: {taxes.DeclaracionAduanas}</p>
                 <p>Aduanero Total: {taxes.Aduanero}</p>
                 <hr />
               </div>
