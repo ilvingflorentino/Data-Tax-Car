@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
+import type { TableColumnsType, TableProps } from "antd";
 
 interface DataType {
   key: React.Key;
@@ -64,6 +65,9 @@ const App: React.FC = () => {
     }).format(value);
   };
 
+  function refe() {
+    window.location.reload();
+  }
   const updateFOB = (vehicleKey: React.Key, newValue: number) => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) =>
@@ -80,9 +84,11 @@ const App: React.FC = () => {
     const cif_total = fob + seguro + flete + otros;
     const cifRD = cif_total / 2;
 
-    // Gravamen dinámico
+    // Gravamen dinámico (0 si es de EE.UU.)
     const gravamen =
-      vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS" ? 0 : cif_total * 0.1;
+      vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS"
+        ? 0
+        : cif_total * gravamenRate;
 
     // ITBIS
     const itbis = (cif_total + gravamen) * 0.18;
@@ -130,20 +136,45 @@ const App: React.FC = () => {
       Total_regimen: formatCurrency(total_regimen * rate, currency),
       Co2: formatCurrency(co2 * rate, currency),
       Placa: formatCurrency(placa * rate, currency),
-      servicioAduanero: formatCurrency(tasaServicioAduanero, currency),
+      servicioAduanero: formatCurrency(tasaServicioAduanero),
       cifRD: formatCurrency(cifRD * rate, currency),
-      DeclaracionAduanas: formatCurrency(declaracionAduanas, currency), // Siempre en DOP
+      DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
     };
   };
 
-  function refe() {
-    window.location.reload();
-  }
   const clearSelection = () => {
     setSelectedRowKeys([]);
     setSelectedVehicles([]);
   };
+
+  const columns: TableColumnsType<DataType> = [
+    {
+      title: "Marca",
+      dataIndex: "Marca",
+      key: "Marca",
+    },
+    {
+      title: "Modelo",
+      dataIndex: "Modelo",
+      key: "Modelo",
+    },
+    {
+      title: "Año",
+      dataIndex: "Año",
+      key: "Año",
+    },
+    {
+      title: "Valor",
+      dataIndex: "Valor",
+      key: "Valor",
+    },
+    {
+      title: "Pais",
+      dataIndex: "Pais",
+      key: "Pais",
+    },
+  ];
 
   return (
     <div
@@ -185,15 +216,10 @@ const App: React.FC = () => {
           },
           type: "radio",
         }}
-        columns={[
-          { title: "Marca", dataIndex: "Marca", key: "Marca" },
-          { title: "Modelo", dataIndex: "Modelo", key: "Modelo" },
-          { title: "Valor", dataIndex: "Valor", key: "Valor" },
-          { title: "Año", dataIndex: "Año", key: "Año" },
-          { title: "Pais", dataIndex: "Pais", key: "Pais" },
-        ]}
+        columns={columns}
         dataSource={data}
       />
+
       <div style={{ marginBottom: "16px" }}>
         <Button type="primary" onClick={clearSelection}>
           Limpiar resultados
@@ -230,6 +256,7 @@ const App: React.FC = () => {
           {isUSD ? "Calcular en Pesos Dominicanos" : "Calcular en Dólares"}
         </Button>
       </div>
+
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
           {selectedVehicles.map((vehicle, index) => {
@@ -242,23 +269,7 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-                <p>
-                  Total FOB En US{" "}
-                  <InputNumber
-                    value={vehicle.Valor}
-                    onChange={(newValue) =>
-                      updateFOB(vehicle.key, newValue as number)
-                    }
-                    formatter={(value) =>
-                      value
-                        ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                        : ""
-                    }
-                    parser={(value) =>
-                      parseFloat(value?.replace(/,/g, "") || "0")
-                    }
-                  />
-                </p>
+                <p>Total FOB: {taxes.FOB}</p>
                 <p>Seguro: {taxes.Seguro}</p>
                 <p>Flete: {taxes.Flete}</p>
                 <p>Otros: {taxes.Otros}</p>
