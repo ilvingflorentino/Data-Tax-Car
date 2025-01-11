@@ -124,7 +124,7 @@ const App: React.FC = () => {
     // Moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
     const currency = isUSD ? "USD" : "DOP";
-
+    const marbete = 3000.0;
     return {
       FOB: formatCurrency(fob * rate, currency),
       CIF: formatCurrency(cif_total * rate, currency),
@@ -140,6 +140,7 @@ const App: React.FC = () => {
       cifRD: formatCurrency(cifRD * rate, currency),
       DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
+      marbete: formatCurrency(marbete * rate, currency),
     };
   };
 
@@ -173,6 +174,11 @@ const App: React.FC = () => {
       title: "Pais",
       dataIndex: "Pais",
       key: "Pais",
+    },
+    {
+      title: "especificaciones",
+      dataIndex: "Especificaciones",
+      key: "Especificaciones",
     },
   ];
 
@@ -293,6 +299,7 @@ const App: React.FC = () => {
                 <p>ITBIS: {taxes.ITBIS}</p>
                 <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
                 <p>CO2: {taxes.Co2}</p>
+                <p>marbete: {taxes.marbete}</p>
                 <p>Placa: {taxes.Placa}</p>
                 <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
                 <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
