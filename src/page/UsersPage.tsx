@@ -1,7 +1,6 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 import type { TableColumnsType } from "antd";
-import { Flex, Typography } from "antd";
 interface DataType {
   title: ReactNode;
   key: React.Key;
@@ -23,14 +22,6 @@ const App: React.FC = () => {
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
 
-  const cardStyle: React.CSSProperties = {
-    width: 620,
-  };
-
-  const imgStyle: React.CSSProperties = {
-    display: "block",
-    width: 273,
-  };
   const fetchData = async () => {
     try {
       const params = new URLSearchParams(
@@ -134,7 +125,6 @@ const App: React.FC = () => {
     // Moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
     const currency = isUSD ? "USD" : "DOP";
-    const marbete = 3000.0;
     return {
       FOB: formatCurrency(fob * rate, currency),
       CIF: formatCurrency(cif_total * rate, currency),
@@ -150,17 +140,8 @@ const App: React.FC = () => {
       cifRD: formatCurrency(cifRD * rate, currency),
       DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
-<<<<<<< HEAD
       marbete: formatCurrency(marbete, currency),
-=======
-      marbete: formatCurrency(marbete * rate, currency),
->>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
     };
-  };
-
-  const clearSelection = () => {
-    setSelectedRowKeys([]);
-    setSelectedVehicles([]);
   };
 
   const columns: TableColumnsType<DataType> = [
@@ -190,11 +171,7 @@ const App: React.FC = () => {
       key: "Pais",
     },
     {
-<<<<<<< HEAD
       title: "Especificaciones",
-=======
-      title: "especificaciones",
->>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
       dataIndex: "Especificaciones",
       key: "Especificaciones",
     },
@@ -227,28 +204,31 @@ const App: React.FC = () => {
           }
         />
       </div>
-
       <Table<DataType>
         rowSelection={{
           selectedRowKeys,
           onChange: (newSelectedRowKeys) => {
-            setSelectedRowKeys(newSelectedRowKeys);
-            const selected = data.filter((item) =>
-              newSelectedRowKeys.includes(item.key)
-            );
-            setSelectedVehicles(selected);
+            if (
+              selectedRowKeys.length > 0 &&
+              newSelectedRowKeys[0] === selectedRowKeys[0]
+            ) {
+              setSelectedRowKeys([]);
+              setSelectedVehicles([]);
+            } else {
+              setSelectedRowKeys(newSelectedRowKeys);
+              const selected = data.filter((item) =>
+                newSelectedRowKeys.includes(item.key)
+              );
+              setSelectedVehicles(selected);
+            }
           },
-          type: "radio",
+          type: "checkbox",
         }}
         columns={columns}
         dataSource={data}
       />
 
       <div style={{ marginBottom: "16px" }}>
-        <Button type="primary" onClick={clearSelection}>
-          Limpiar resultados
-        </Button>
-
         <Button type="primary" style={{ marginLeft: "12px" }} onClick={refe}>
           Valores Por Defectos.
         </Button>
@@ -289,107 +269,133 @@ const App: React.FC = () => {
               <div key={index}>
                 <p>
                   <b>
-                    {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
-                    {vehicle.Pais}
+                    <h1>
+                      {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
+                      {vehicle.Pais}
+                    </h1>
                   </b>
                 </p>
-<<<<<<< HEAD
-
-                <Card
-                  hoverable
-                  style={cardStyle}
-                  styles={{
-                    body: {
-                      padding: 0,
-                      overflow: "hidden",
-                    },
+                <div
+                  style={{
+                    padding: "16px",
+                    background: "#f0f2f5",
+                    borderRadius: "10px",
                   }}
                 >
-                  Total FOB En US{" "}
-                  <InputNumber
-                    value={vehicle.Valor}
-                    onChange={(newValue) =>
-                      updateFOB(vehicle.key, newValue as number)
-                    }
-                    formatter={(value) =>
-                      value
-                        ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                        : ""
-                    }
-                    parser={(value) =>
-                      parseFloat(value?.replace(/,/g, "") || "0")
-                    }
-                  />
-                  <p>Seguro: {taxes.Seguro}</p>
-                  <p>Flete: {taxes.Flete}</p>
-                  <hr></hr>
-                  <p>Total CIF: {taxes.CIF}</p>
-                </Card>
-                <Card
-                  hoverable
-                  style={cardStyle}
-                  styles={{ body: { padding: 0, overflow: "hidden" } }}
-                >
-                  <p>CO2: {taxes.Co2}</p>
-                  <p>Placa: {taxes.Placa}</p>
-                  <p>Marbete: {taxes.marbete}</p>
-                  <hr></hr>
-                  <p>total Dgii:</p>
-                </Card>
-                <Card
-                  hoverable
-                  style={cardStyle}
-                  styles={{ body: { padding: 0, overflow: "hidden" } }}
-                >
-                  <p>Gravamen: {taxes.Gravamen}</p>
-                  <p>ITBIS: {taxes.ITBIS}</p>
-                  <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
-                  <hr></hr>
-                  <p>Aduanero Total: {taxes.Aduanero}</p>
-                </Card>
-                <Card
-                  hoverable
-                  style={cardStyle}
-                  styles={{ body: { padding: 0, overflow: "hidden" } }}
-                >
-                  {" "}
-                  <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
-                  <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
-                  <hr></hr>
-                  <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
-                </Card>
-=======
-                Total FOB En US{" "}
-                <InputNumber
-                  value={vehicle.Valor}
-                  onChange={(newValue) =>
-                    updateFOB(vehicle.key, newValue as number)
-                  }
-                  formatter={(value) =>
-                    value
-                      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      : ""
-                  }
-                  parser={(value) =>
-                    parseFloat(value?.replace(/,/g, "") || "0")
-                  }
-                />
-                <p>Seguro: {taxes.Seguro}</p>
-                <p>Flete: {taxes.Flete}</p>
-                <p>Otros: {taxes.Otros}</p>
-                <p>Total CIF: {taxes.CIF}</p>
-                <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
-                <p>Gravamen: {taxes.Gravamen}</p>
-                <p>ITBIS: {taxes.ITBIS}</p>
-                <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
-                <p>CO2: {taxes.Co2}</p>
-                <p>marbete: {taxes.marbete}</p>
-                <p>Placa: {taxes.Placa}</p>
-                <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
-                <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
-                <p>Aduanero Total: {taxes.Aduanero}</p>
-                <hr />
->>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
+                  {/* Tasa */}
+                  <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                    <h3>Tasa</h3>
+                    <div>
+                      RD${" "}
+                      <InputNumber
+                        value={exchangeRate}
+                        onChange={(value) => setExchangeRate(value ?? 0)}
+                      />
+                    </div>
+                  </div>
+
+                  {/* Contenedor de Grid */}
+                  <div
+                    style={{
+                      display: "grid",
+                      gridTemplateColumns: "1fr 1fr",
+                      gap: "20px",
+                      maxWidth: "1200px",
+                      margin: "0 auto",
+                    }}
+                  >
+                    {/* Columna Izquierda */}
+                    <div>
+                      <Card hoverable style={{ padding: "16px" }}>
+                        <h4>Precio</h4>
+                        <p>Valor Declarado FOB</p>
+                        <InputNumber
+                          value={selectedVehicles[0]?.Valor || 0}
+                          onChange={(newValue) => {
+                            if (newValue !== null) {
+                              updateFOB(selectedVehicles[0]?.key, newValue);
+                            }
+                          }}
+                        />
+                        <p>
+                          Seguro: {calculateTaxes(selectedVehicles[0]).Seguro}
+                        </p>
+                        <p>
+                          Flete: {calculateTaxes(selectedVehicles[0]).Flete}
+                        </p>
+                        <hr />
+                        <p>
+                          Total CIF: {calculateTaxes(selectedVehicles[0]).CIF}
+                        </p>
+                      </Card>
+                    </div>
+
+                    {/* Columna Derecha */}
+                    <div>
+                      <Card hoverable style={{ padding: "16px" }}>
+                        <h4>Total Aduanas</h4>
+                        <p>
+                          Gravamen:{" "}
+                          {calculateTaxes(selectedVehicles[0]).Gravamen}
+                        </p>
+                        <p>
+                          ITBIS: {calculateTaxes(selectedVehicles[0]).ITBIS}
+                        </p>
+                        <p>
+                          Servicio Aduanero:{" "}
+                          {calculateTaxes(selectedVehicles[0]).servicioAduanero}
+                        </p>
+                        <hr />
+                        <p>
+                          Total Aduanas:{" "}
+                          {calculateTaxes(selectedVehicles[0]).Aduanero}
+                        </p>
+                      </Card>
+                    </div>
+
+                    {/* Parte Inferior Izquierda */}
+                    <div>
+                      <Card hoverable style={{ padding: "16px" }}>
+                        <h4>Otros Impuestos</h4>
+                        <p>CO2: {calculateTaxes(selectedVehicles[0]).Co2}</p>
+                        <p>
+                          Placa: {calculateTaxes(selectedVehicles[0]).Placa}
+                        </p>
+                        <p>
+                          Marbete: {calculateTaxes(selectedVehicles[0]).marbete}
+                        </p>
+                        <hr />
+                        <p>
+                          Total DGII:{" "}
+                          {calculateTaxes(selectedVehicles[0]).Total_regimen}
+                        </p>
+                      </Card>
+                    </div>
+
+                    {/* Parte Inferior Derecha */}
+                    <div>
+                      <Card hoverable style={{ padding: "16px" }}>
+                        <h4>Declaración Final</h4>
+                        <p>
+                          Total Imp. y Régimen a Pagar:{" "}
+                          {calculateTaxes(selectedVehicles[0]).Total_regimen}
+                        </p>
+                        <p>
+                          Total Monto Liberado del CIF:{" "}
+                          {calculateTaxes(selectedVehicles[0]).cifRD}
+                        </p>
+                        <hr />
+                        <p>
+                          Declaración Aduanera:{" "}
+                          {
+                            calculateTaxes(selectedVehicles[0])
+                              .DeclaracionAduanas
+                          }
+                        </p>
+                      </Card>
+                    </div>
+                  </div>
+                </div>
               </div>
             );
           })}
