@@ -134,7 +134,7 @@ const App: React.FC = () => {
     // Moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
     const currency = isUSD ? "USD" : "DOP";
-
+    const marbete = 3000.0;
     return {
       FOB: formatCurrency(fob * rate, currency),
       CIF: formatCurrency(cif_total * rate, currency),
@@ -150,7 +150,11 @@ const App: React.FC = () => {
       cifRD: formatCurrency(cifRD * rate, currency),
       DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
+<<<<<<< HEAD
       marbete: formatCurrency(marbete, currency),
+=======
+      marbete: formatCurrency(marbete * rate, currency),
+>>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
     };
   };
 
@@ -186,7 +190,11 @@ const App: React.FC = () => {
       key: "Pais",
     },
     {
+<<<<<<< HEAD
       title: "Especificaciones",
+=======
+      title: "especificaciones",
+>>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
       dataIndex: "Especificaciones",
       key: "Especificaciones",
     },
@@ -285,6 +293,7 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
+<<<<<<< HEAD
 
                 <Card
                   hoverable
@@ -349,6 +358,38 @@ const App: React.FC = () => {
                   <hr></hr>
                   <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
                 </Card>
+=======
+                Total FOB En US{" "}
+                <InputNumber
+                  value={vehicle.Valor}
+                  onChange={(newValue) =>
+                    updateFOB(vehicle.key, newValue as number)
+                  }
+                  formatter={(value) =>
+                    value
+                      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      : ""
+                  }
+                  parser={(value) =>
+                    parseFloat(value?.replace(/,/g, "") || "0")
+                  }
+                />
+                <p>Seguro: {taxes.Seguro}</p>
+                <p>Flete: {taxes.Flete}</p>
+                <p>Otros: {taxes.Otros}</p>
+                <p>Total CIF: {taxes.CIF}</p>
+                <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
+                <p>Gravamen: {taxes.Gravamen}</p>
+                <p>ITBIS: {taxes.ITBIS}</p>
+                <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
+                <p>CO2: {taxes.Co2}</p>
+                <p>marbete: {taxes.marbete}</p>
+                <p>Placa: {taxes.Placa}</p>
+                <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
+                <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
+                <p>Aduanero Total: {taxes.Aduanero}</p>
+                <hr />
+>>>>>>> 3cfa7fc276d614fe12e4a97b293414588fd2302f
               </div>
             );
           })}
