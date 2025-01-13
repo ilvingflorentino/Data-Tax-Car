@@ -1,8 +1,9 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, ReactNode } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 import type { TableColumnsType } from "antd";
-
+import { Flex, Typography } from "antd";
 interface DataType {
+  title: ReactNode;
   key: React.Key;
   Marca: string;
   Modelo: string;
@@ -22,6 +23,14 @@ const App: React.FC = () => {
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
 
+  const cardStyle: React.CSSProperties = {
+    width: 620,
+  };
+
+  const imgStyle: React.CSSProperties = {
+    display: "block",
+    width: 273,
+  };
   const fetchData = async () => {
     try {
       const params = new URLSearchParams(
@@ -98,7 +107,8 @@ const App: React.FC = () => {
 
     // CO2 dinámico
     const co2 = cif_total * co2Rate;
-
+    //marbete
+    const marbete = 3000;
     // Placa
     const placa = cif_total * 0.17;
 
@@ -140,6 +150,7 @@ const App: React.FC = () => {
       cifRD: formatCurrency(cifRD * rate, currency),
       DeclaracionAduanas: formatCurrency(declaracionAduanas, "DOP"), // Siempre en DOP
       Aduanero: formatCurrency(aduaneroTotal, currency),
+      marbete: formatCurrency(marbete, currency),
     };
   };
 
@@ -173,6 +184,11 @@ const App: React.FC = () => {
       title: "Pais",
       dataIndex: "Pais",
       key: "Pais",
+    },
+    {
+      title: "Especificaciones",
+      dataIndex: "Especificaciones",
+      key: "Especificaciones",
     },
   ];
 
@@ -226,7 +242,7 @@ const App: React.FC = () => {
         </Button>
 
         <Button type="primary" style={{ marginLeft: "12px" }} onClick={refe}>
-          Valores Anteriores
+          Valores Por Defectos.
         </Button>
 
         <Select
@@ -269,35 +285,70 @@ const App: React.FC = () => {
                     {vehicle.Pais}
                   </b>
                 </p>
-                Total FOB En US{" "}
-                <InputNumber
-                  value={vehicle.Valor}
-                  onChange={(newValue) =>
-                    updateFOB(vehicle.key, newValue as number)
-                  }
-                  formatter={(value) =>
-                    value
-                      ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                      : ""
-                  }
-                  parser={(value) =>
-                    parseFloat(value?.replace(/,/g, "") || "0")
-                  }
-                />
-                <p>Seguro: {taxes.Seguro}</p>
-                <p>Flete: {taxes.Flete}</p>
-                <p>Otros: {taxes.Otros}</p>
-                <p>Total CIF: {taxes.CIF}</p>
-                <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
-                <p>Gravamen: {taxes.Gravamen}</p>
-                <p>ITBIS: {taxes.ITBIS}</p>
-                <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
-                <p>CO2: {taxes.Co2}</p>
-                <p>Placa: {taxes.Placa}</p>
-                <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
-                <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
-                <p>Aduanero Total: {taxes.Aduanero}</p>
-                <hr />
+
+                <Card
+                  hoverable
+                  style={cardStyle}
+                  styles={{
+                    body: {
+                      padding: 0,
+                      overflow: "hidden",
+                    },
+                  }}
+                >
+                  Total FOB En US{" "}
+                  <InputNumber
+                    value={vehicle.Valor}
+                    onChange={(newValue) =>
+                      updateFOB(vehicle.key, newValue as number)
+                    }
+                    formatter={(value) =>
+                      value
+                        ? value.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                        : ""
+                    }
+                    parser={(value) =>
+                      parseFloat(value?.replace(/,/g, "") || "0")
+                    }
+                  />
+                  <p>Seguro: {taxes.Seguro}</p>
+                  <p>Flete: {taxes.Flete}</p>
+                  <hr></hr>
+                  <p>Total CIF: {taxes.CIF}</p>
+                </Card>
+                <Card
+                  hoverable
+                  style={cardStyle}
+                  styles={{ body: { padding: 0, overflow: "hidden" } }}
+                >
+                  <p>CO2: {taxes.Co2}</p>
+                  <p>Placa: {taxes.Placa}</p>
+                  <p>Marbete: {taxes.marbete}</p>
+                  <hr></hr>
+                  <p>total Dgii:</p>
+                </Card>
+                <Card
+                  hoverable
+                  style={cardStyle}
+                  styles={{ body: { padding: 0, overflow: "hidden" } }}
+                >
+                  <p>Gravamen: {taxes.Gravamen}</p>
+                  <p>ITBIS: {taxes.ITBIS}</p>
+                  <p>Tasa Servicio Aduanero: {taxes.servicioAduanero}</p>
+                  <hr></hr>
+                  <p>Aduanero Total: {taxes.Aduanero}</p>
+                </Card>
+                <Card
+                  hoverable
+                  style={cardStyle}
+                  styles={{ body: { padding: 0, overflow: "hidden" } }}
+                >
+                  {" "}
+                  <p>Total Imp. y Régimen a Pagar: {taxes.Total_regimen}</p>
+                  <p>Total Monto Liberado del CIF: {taxes.cifRD}</p>
+                  <hr></hr>
+                  <p>Declaración Única Aduanera: {taxes.DeclaracionAduanas}</p>
+                </Card>
               </div>
             );
           })}
@@ -306,5 +357,4 @@ const App: React.FC = () => {
     </div>
   );
 };
-
 export default App;
