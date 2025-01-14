@@ -114,7 +114,7 @@ const App: React.FC = () => {
     // Declaración Aduanas fija en RD$
     const declaracionAduanasDOP = 258.26; // Siempre en RD$
 
-    // Convertir a USD si es necesario
+    // Convertir a USD si es necesarios
     const declaracionAduanas = isUSD
       ? declaracionAduanasDOP / exchangeRate
       : declaracionAduanasDOP;
