@@ -21,6 +21,9 @@ const App: React.FC = () => {
   const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
+  const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Marbete editable
+  const [servicioAduaneroValue, setServicioAduaneroValue] =
+    useState<number>(8756.31); // Servicio Aduanero editable
 
   const fetchData = async () => {
     try {
