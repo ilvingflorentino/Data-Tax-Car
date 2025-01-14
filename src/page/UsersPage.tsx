@@ -117,7 +117,7 @@ const App: React.FC = () => {
     // Declaración Aduanas fija en RD$
     const declaracionAduanasDOP = 258.26; // Siempre en RD$
 
-    // Convertir a USD si es necesarios
+    // Convertir a USD si es necesario
     const declaracionAduanas = isUSD
       ? declaracionAduanasDOP / exchangeRate
       : declaracionAduanasDOP;
@@ -128,6 +128,8 @@ const App: React.FC = () => {
     // Moneda seleccionada
     const rate = isUSD ? 1 : exchangeRate;
     const currency = isUSD ? "USD" : "DOP";
+
+    const totalDgii = co2 + placa + marbete;
     return {
       FOB: formatCurrency(fob * rate, currency),
       CIF: formatCurrency(cif_total * rate, currency),
@@ -311,15 +313,17 @@ const App: React.FC = () => {
                     <div>
                       <Card hoverable style={{ padding: "16px" }}>
                         <h4>Precio</h4>
-                        <p>Valor Declarado FOB</p>
-                        <InputNumber
-                          value={selectedVehicles[0]?.Valor || 0}
-                          onChange={(newValue) => {
-                            if (newValue !== null) {
-                              updateFOB(selectedVehicles[0]?.key, newValue);
-                            }
-                          }}
-                        />
+                        <p>
+                          Valor Declarado FOB: ${" "}
+                          <InputNumber
+                            value={selectedVehicles[0]?.Valor || 0}
+                            onChange={(newValue) => {
+                              if (newValue !== null) {
+                                updateFOB(selectedVehicles[0]?.key, newValue);
+                              }
+                            }}
+                          />
+                        </p>
                         <p>
                           Seguro: {calculateTaxes(selectedVehicles[0]).Seguro}
                         </p>
@@ -344,9 +348,15 @@ const App: React.FC = () => {
                         <p>
                           ITBIS: {calculateTaxes(selectedVehicles[0]).ITBIS}
                         </p>
+
                         <p>
-                          Servicio Aduanero:{" "}
-                          {calculateTaxes(selectedVehicles[0]).servicioAduanero}
+                          Servicio Aduanero: $ {""}
+                          <InputNumber
+                            value={servicioAduaneroValue}
+                            onChange={(value) =>
+                              setServicioAduaneroValue(value ?? 0)
+                            }
+                          />
                         </p>
                         <hr />
                         <p>
@@ -365,7 +375,13 @@ const App: React.FC = () => {
                           Placa: {calculateTaxes(selectedVehicles[0]).Placa}
                         </p>
                         <p>
-                          Marbete: {calculateTaxes(selectedVehicles[0]).marbete}
+                          <p>
+                            Marbete: $ {""}
+                            <InputNumber
+                              value={marbeteValue}
+                              onChange={(value) => setMarbeteValue(value ?? 0)}
+                            />
+                          </p>
                         </p>
                         <hr />
                         <p>
@@ -380,12 +396,23 @@ const App: React.FC = () => {
                       <Card hoverable style={{ padding: "16px" }}>
                         <h4>Declaración Final</h4>
                         <p>
-                          Total Imp. y Régimen a Pagar:{" "}
+                          Total Aduanas{" "}
                           {calculateTaxes(selectedVehicles[0]).Total_regimen}
                         </p>
                         <p>
-                          Total Monto Liberado del CIF:{" "}
-                          {calculateTaxes(selectedVehicles[0]).cifRD}
+                          Total DGII {calculateTaxes(selectedVehicles[0]).cifRD}
+                        </p>
+
+                        <p>
+                          Valor Vehiculo ${" "}
+                          <InputNumber
+                            value={selectedVehicles[0]?.Valor || 0}
+                            onChange={(newValue) => {
+                              if (newValue !== null) {
+                                updateFOB(selectedVehicles[0]?.key, newValue);
+                              }
+                            }}
+                          />
                         </p>
                         <hr />
                         <p>
