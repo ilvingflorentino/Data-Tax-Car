@@ -23,7 +23,7 @@ const App: React.FC = () => {
   const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
-  const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Marbete editable
+  const [marbeteValue, setMarbeteValue] = useState<number>(50.41); // Marbete editable
   const [servicioAduaneroValue, setServicioAduaneroValue] =
     useState<number>(8756.31); // Servicio Aduanero editable
 
@@ -137,6 +137,7 @@ const App: React.FC = () => {
 
     const marbete = marbeteValue;
     // Total DGII
+
     const totalDgii = co2 + placa + marbeteValue; // Marbete ya está en RD$
 
     // Servicio Aduanero ya está en RD$
@@ -539,6 +540,7 @@ const App: React.FC = () => {
                     <div>
                       <Card hoverable style={{ padding: "16px" }}>
                         <h4>Declaración Final</h4>
+
                         {/* Total Aduanas */}
                         <p>
                           <b>Total Aduanas:</b>
