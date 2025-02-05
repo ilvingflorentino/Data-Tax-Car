@@ -2,6 +2,7 @@ import React, { useState, useEffect, ReactNode } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 import type { TableColumnsType } from "antd";
 interface DataType {
+  ValorVehiculo: number;
   Flete: number;
   Seguro: number;
   title: ReactNode;
@@ -148,7 +149,7 @@ const App: React.FC = () => {
     const totalImpuestos = totalAduanas + totalDgii + cifRD;
 
     const CalculoTotalDgii = totalDgii;
-
+    const Total = total_regimen + totalDgii;
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
       CIF: formatCurrency(cifRD, "DOP"),
@@ -167,6 +168,7 @@ const App: React.FC = () => {
       totalImpuestos: formatCurrency(totalImpuestos, "DOP"),
       Marbete: `RD$ ${marbete.toFixed(2)}`, // ✅ Se mantiene en RD$
       CalculoTotalDgii: formatCurrency(CalculoTotalDgii, "DOP"),
+      Total: formatCurrency(Total * exchangeRate, "DOP"),
     };
   };
 
@@ -255,16 +257,39 @@ const App: React.FC = () => {
       />
 
       {selectedVehicles.length > 0 && (
-        <Card title="Resultados de los cálculos" style={{ marginTop: "16px" }}>
+        <Card
+          title="Resultados de los cálculos"
+          style={{
+            marginTop: "16px",
+            padding: "20px",
+            background: "#ffffff",
+            borderRadius: "10px",
+            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
+          }}
+        >
           {selectedVehicles.map((vehicle, index) => {
             return (
-              <div key={index}>
+              <div
+                key={index}
+                style={{
+                  marginBottom: "30px",
+                  padding: "20px",
+                  background: "#f9f9f9",
+                  borderRadius: "8px",
+                }}
+              >
                 <p>
                   <b>
-                    <h1>
+                    <h2
+                      style={{
+                        textAlign: "center",
+                        marginBottom: "15px",
+                        color: "#333",
+                      }}
+                    >
                       {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                       {vehicle.Pais}
-                    </h1>
+                    </h2>
                   </b>
                 </p>
                 <div
@@ -275,14 +300,10 @@ const App: React.FC = () => {
                   }}
                 >
                   {/* Tasa */}
-                  <div
-                    style={{
-                      textAlign: "center",
-                      marginBottom: "20px",
-                      marginTop: "1px",
-                    }}
-                  >
-                    <h3>Tasa</h3>
+                  <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                    <h3 style={{ marginBottom: "10px", color: "#555" }}>
+                      Tasa
+                    </h3>
                     <div>
                       RD${" "}
                       <InputNumber
@@ -327,160 +348,98 @@ const App: React.FC = () => {
                       display: "grid",
                       gridTemplateColumns: "1fr 1fr",
                       gap: "20px",
-                      maxWidth: "1200px",
-                      margin: "0 auto",
                     }}
                   >
                     {/* Columna Izquierda */}
                     <div>
-                      <Card hoverable style={{ padding: "16px" }}>
-                        <h4>Precio</h4>
+                      <Card
+                        hoverable
+                        style={{ padding: "20px", background: "#fdfdfd" }}
+                      >
+                        <h4 style={{ color: "#444" }}>Precios</h4>
 
                         <p>
-                          <b>Valor Declarado FOB:</b>
-                          <span
-                            style={{ marginLeft: "5px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (vehicle.Valor || 0) * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Valor FOB:</b> RD${" "}
+                          {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
                           <InputNumber
-                            value={vehicle.Valor || 0}
+                            value={vehicle.Valor}
                             onChange={(newValue) => {
                               if (newValue !== null) {
                                 updateFOB(vehicle.key, newValue);
+                                setSelectedVehicles((prevVehicles) =>
+                                  prevVehicles.map((v) =>
+                                    v.key === vehicle.key
+                                      ? { ...v, ValorVehiculo: newValue }
+                                      : v
+                                  )
+                                );
                               }
                             }}
-                            style={{ marginLeft: "10px" }}
                           />
                         </p>
-
                         <p>
-                          <b>Seguro:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (vehicle.Seguro ?? vehicle.Valor * 0.02) *
-                                exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Seguro:</b> RD${" "}
+                          {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
                           <InputNumber
-                            value={vehicle.Seguro ?? vehicle.Valor * 0.02}
+                            value={vehicle.Seguro}
                             onChange={(newValue) => {
                               if (newValue !== null) {
                                 updateSeguro(vehicle.key, newValue);
                               }
                             }}
-                            style={{ marginLeft: "10px" }}
                           />
                         </p>
-
                         <p>
-                          <b>Flete:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (vehicle.Flete ?? 800) * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Flete:</b> RD${" "}
+                          {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
                           <InputNumber
-                            value={vehicle.Flete ?? 800}
+                            value={vehicle.Flete}
                             onChange={(newValue) => {
                               if (newValue !== null) {
                                 updateFlete(vehicle.key, newValue);
                               }
                             }}
-                            style={{ marginLeft: "10px" }}
                           />
                         </p>
 
                         <hr />
-
                         <p>
-                          <b>Total CIF:</b>
-                          <span
-                            style={{
-                              marginLeft: "10px",
-                              fontWeight: "bold",
-                              fontSize: "18px",
-                            }}
-                          >
-                            RD${" "}
-                            {new Intl.NumberFormat("es-DO", {
-                              style: "currency",
-                              currency: "DOP",
-                            }).format(
-                              ((vehicle.Valor || 0) +
-                                (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                                (vehicle.Flete ?? 800) +
-                                350) *
-                                exchangeRate
-                            )}
-                          </span>
-                          <span
-                            style={{
-                              marginLeft: "10px",
-                              fontWeight: "bold",
-                              fontSize: "18px",
-                            }}
-                          >
-                            / USD${" "}
-                            {new Intl.NumberFormat("en-US", {
-                              style: "currency",
-                              currency: "USD",
-                            }).format(
-                              (((vehicle.Valor || 0) +
-                                (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                                (vehicle.Flete ?? 800) +
-                                350) *
-                                exchangeRate) /
-                                exchangeRate
-                            )}
-                          </span>
+                          <b>Total CIF:</b> RD${" "}
+                          {formatCurrency(
+                            ((vehicle.Valor || 0) +
+                              (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                              (vehicle.Flete ?? 800) +
+                              350) *
+                              exchangeRate,
+                            "DOP"
+                          )}{" "}
+                          / USD{" "}
+                          {formatCurrency(
+                            (vehicle.Valor || 0) +
+                              (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                              (vehicle.Flete ?? 800) +
+                              350,
+                            "USD"
+                          )}
                         </p>
                       </Card>
                     </div>
 
                     {/* Columna Derecha */}
                     <div>
-                      <Card hoverable style={{ padding: "16px" }}>
-                        <h4>Aduanas</h4>
-                        {/* Gravamen */}
+                      <Card
+                        hoverable
+                        style={{ padding: "20px", background: "#fdfdfd" }}
+                      >
+                        <h4 style={{ color: "#444" }}>Aduanas</h4>
                         <p>
-                          <b>Gravamen:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            {calculateTaxes(selectedVehicles[0]).Gravamen}
-                          </span>
+                          <b>Gravamen:</b> {calculateTaxes(vehicle).Gravamen}
                         </p>
-
-                        {/* ITBIS */}
                         <p>
-                          <b>ITBIS:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            {calculateTaxes(selectedVehicles[0]).ITBIS}
-                          </span>
+                          <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
                         </p>
-
                         <p>
-                          <b>Servicio Aduanero:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD$
-                          </span>
+                          <b>Servicio Aduanero:</b> RD${" "}
                           <InputNumber
                             value={servicioAduaneroValue}
                             onChange={(newValue) => {
@@ -488,158 +447,135 @@ const App: React.FC = () => {
                                 setServicioAduaneroValue(newValue);
                               }
                             }}
-                            min={0}
-                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
                         <hr />
                         <p>
-                          <b>Total Aduanero:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).Total_regimen.replace(/[^0-9.-]+/g, "")
-                              ) || 0) + servicioAduaneroValue,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Total Aduanero:</b> RD${" "}
+                          {formatCurrency(
+                            parseFloat(
+                              calculateTaxes(vehicle).Total_regimen.replace(
+                                /[^0-9.-]+/g,
+                                ""
+                              )
+                            ) + servicioAduaneroValue,
+                            "DOP"
+                          )}
                         </p>
                       </Card>
                     </div>
 
                     {/* Parte Inferior Izquierda */}
                     <div>
-                      <Card hoverable style={{ padding: "16px" }}>
-                        <h4>Otros Impuestos</h4>
+                      <Card
+                        hoverable
+                        style={{ padding: "20px", background: "#fdfdfd" }}
+                      >
+                        <h4 style={{ color: "#444" }}>Otros Impuestos</h4>
                         <p>
-                          <b>CO2:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            {calculateTaxes(selectedVehicles[0]).Co2}
-                          </span>
+                          <b>CO2:</b> {calculateTaxes(vehicle).Co2}
                         </p>
                         <p>
-                          <b>Placa:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            {calculateTaxes(selectedVehicles[0]).Placa}
-                          </span>
-                          <p />
-                          <p>
-                            <b>Marbete:</b>
-                            <span
-                              style={{ marginLeft: "10px", fontWeight: "bold" }}
-                            >
-                              RD$
-                            </span>
-                            <InputNumber
-                              value={marbeteValue}
-                              onChange={(newValue) => {
-                                if (newValue !== null) {
-                                  setMarbeteValue(newValue); // 🚨 Guarda el valor en RD$
-                                }
-                              }}
-                              min={0}
-                              style={{ marginLeft: "10px", width: "120px" }}
-                            />
-                          </p>
+                          <b>Placa:</b> {calculateTaxes(vehicle).Placa}
+                        </p>
+                        <p>
+                          <b>Marbete:</b> RD${" "}
+                          <InputNumber
+                            value={marbeteValue}
+                            onChange={(newValue) =>
+                              setMarbeteValue(newValue ?? 0)
+                            }
+                          />
                         </p>
                         <hr />
                         <p>
-                          <b>Total DGII:</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).totalDgii.replace(/[^0-9.-]+/g, "")
-                              ) || 0) * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Total DGII:</b> RD${" "}
+                          {formatCurrency(
+                            parseFloat(
+                              calculateTaxes(vehicle).totalDgii.replace(
+                                /[^0-9.-]+/g,
+                                ""
+                              )
+                            ) * exchangeRate,
+                            "DOP"
+                          )}
                         </p>
                       </Card>
                     </div>
 
                     {/* Parte Inferior Derecha */}
                     <div>
-                      <Card hoverable style={{ padding: "16px" }}>
-                        <h4>Declaración Final</h4>
+                      <Card
+                        hoverable
+                        style={{ padding: "20px", background: "#fdfdfd" }}
+                      >
+                        <h4 style={{ color: "#444" }}>Declaración Final</h4>
                         <p>
-                          <b>Total Aduanas</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).Total_regimen.replace(/[^0-9.-]+/g, "")
-                              ) || 0) + servicioAduaneroValue,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Total Aduanas:</b>{" "}
+                          {formatCurrency(
+                            parseFloat(
+                              calculateTaxes(vehicle).Total_regimen.replace(
+                                /[^0-9.-]+/g,
+                                ""
+                              )
+                            ) + servicioAduaneroValue,
+                            "DOP"
+                          )}
                         </p>
                         <p>
-                          <b>Total DGII</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).CalculoTotalDgii.replace(/[^0-9.-]+/g, "")
-                              ) || 0) * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Total DGII:</b>{" "}
+                          {formatCurrency(
+                            parseFloat(
+                              calculateTaxes(vehicle).totalDgii.replace(
+                                /[^0-9.-]+/g,
+                                ""
+                              )
+                            ) * exchangeRate,
+                            "DOP"
+                          )}
                         </p>
-                        {/* <p>
-                          <b>Valor Vehiculo</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              (parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).CalculoAduanero.replace(/[^0-9.-]+/g, "")
-                              ) || 0) * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+
+                        <p>
+                          <b>Valor Vehículo:</b> RD${" "}
+                          {formatCurrency(
+                            (vehicle.ValorVehiculo ?? vehicle.Valor) *
+                              exchangeRate,
+                            "DOP"
+                          )}
+                          <InputNumber
+                            style={{ width: "150px", marginLeft: "10px" }}
+                            value={vehicle.ValorVehiculo ?? vehicle.Valor} // Si no hay ValorVehiculo, usa FOB
+                            placeholder="Valor Adicional"
+                            onChange={(newValue) => {
+                              if (newValue !== null) {
+                                setSelectedVehicles((prevVehicles) =>
+                                  prevVehicles.map((v) =>
+                                    v.key === vehicle.key
+                                      ? { ...v, ValorVehiculo: newValue } // SOLO cambia ValorVehiculo
+                                      : v
+                                  )
+                                );
+                              }
+                            }}
+                          />
                         </p>
-                        <hr></hr> */}
-                        {/* <p>
+                        <hr></hr>
+                        <p>
                           <b>Total + Impuestos</b>
                           <span
                             style={{ marginLeft: "10px", fontWeight: "bold" }}
                           >
                             RD${" "}
                             {formatCurrency(
-                              (parseFloat(
+                              parseFloat(
                                 calculateTaxes(
                                   selectedVehicles[0]
-                                ).CalculoAduanero.replace(/[^0-9.-]+/g, "")
-                              ) || 0) * exchangeRate,
+                                ).Total.replace(/[^0-9.-]+/g, "")
+                              ) || 0 * exchangeRate,
                               "DOP"
                             )}
                           </span>
-                        </p> */}
+                        </p>
                       </Card>
                     </div>
                   </div>
