@@ -198,6 +198,12 @@ const App: React.FC = () => {
     },
   ];
 
+  //cuando se modifique el fob debe actulizar valor vehicuolo.
+  //alinar puntos sobre puntos.
+  //poner decimase a intup
+  //total CIF, alinados con datos.
+  //igualdad de columna superior por inferior
+
   return (
     <div className="container">
       <div className="filters">
@@ -400,6 +406,7 @@ const App: React.FC = () => {
                   <p>
                     <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
                   </p>
+
                   <p>
                     <b>Valor Vehículo:</b>{" "}
                     {formatCurrency(
