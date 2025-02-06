@@ -1,6 +1,7 @@
 import React, { useState, useEffect, ReactNode } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 import type { TableColumnsType } from "antd";
+import "./styles.css";
 interface DataType {
   ValorVehiculo: number;
   Flete: number;
@@ -198,10 +199,8 @@ const App: React.FC = () => {
   ];
 
   return (
-    <div
-      style={{ padding: "16px", background: "#85858e", borderRadius: "10px" }}
-    >
-      <div style={{ marginBottom: "16px", display: "flex", gap: "10px" }}>
+    <div className="container">
+      <div className="filters">
         <Input
           placeholder="Buscar por Marca"
           value={filters.marca}
@@ -224,7 +223,7 @@ const App: React.FC = () => {
           }
         />
       </div>
-      <Table<DataType>
+      <Table
         rowSelection={{
           selectedRowKeys,
           onChange: (newSelectedRowKeys) => {
@@ -249,244 +248,189 @@ const App: React.FC = () => {
       />
 
       {selectedVehicles.length > 0 && (
-        <Card
-          title="Resultados de los cálculos"
-          style={{ marginTop: "16px", padding: "20px" }}
-        >
-          {selectedVehicles.map((vehicle, index) => {
-            return (
-              <div key={index} style={{ marginBottom: "30px" }}>
-                <p>
-                  <b>
-                    <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
-                      {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
-                      {vehicle.Pais}
-                    </h2>
-                  </b>
-                </p>
-                <div
-                  style={{
-                    padding: "16px",
-                    background: "#85858e",
-                    borderRadius: "10px",
-                  }}
-                >
-                  {/* Tasa */}
-                  <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                    <h3 style={{ marginBottom: "10px", color: "#000" }}>
-                      Tasa
-                    </h3>
-                    <div>
-                      RD${" "}
-                      <InputNumber
-                        value={exchangeRate}
-                        onChange={(value) => setExchangeRate(value ?? 0)}
-                      />
-                    </div>
-                    <div style={{ marginBottom: "16px", marginTop: "10px" }}>
-                      <Button
-                        type="primary"
-                        style={{ marginLeft: "12px" }}
-                        onClick={refe}
-                      >
-                        Valores Por Defectos.
-                      </Button>
-
-                      <Select
-                        style={{ width: 150, marginLeft: "12px" }}
-                        defaultValue="0.10"
-                        onChange={(value) => setGravamenRate(parseFloat(value))}
-                      >
-                        <Select.Option value="0.10">Gravamen 10%</Select.Option>
-                        <Select.Option value="0.20">Gravamen 20%</Select.Option>
-                        <Select.Option value="0.30">Gravamen 30%</Select.Option>
-                      </Select>
-
-                      <Select
-                        style={{ width: 150, marginLeft: "10px" }}
-                        defaultValue="0.01"
-                        onChange={(value) => setCo2Rate(parseFloat(value))}
-                      >
-                        <Select.Option value="0.01">Co2 1%</Select.Option>
-                        <Select.Option value="0.02">Co2 2%</Select.Option>
-                        <Select.Option value="0.03">Co2 3%</Select.Option>
-                      </Select>
-                    </div>
-                  </div>
-
-                  {/* Contenedor de Grid */}
-                  <div
-                    style={{
-                      display: "grid",
-                      gridTemplateColumns: "1fr 1fr",
-                      gap: "20px",
-                    }}
+        <Card title="Resultados de los cálculos" className="results-card">
+          {selectedVehicles.map((vehicle, index) => (
+            <div key={index} className="vehicle-card">
+              <h2 className="vehicle-title">
+                {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
+                {vehicle.Pais}
+              </h2>
+              <div className="rate-section">
+                <h3>Tasa</h3>
+                <div>
+                  RD${" "}
+                  <InputNumber
+                    value={exchangeRate}
+                    onChange={(value) => setExchangeRate(value ?? 0)}
+                  />
+                </div>
+                <div className="rate-buttons">
+                  <Button type="primary" onClick={refe}>
+                    Valores Por Defecto
+                  </Button>
+                  <Select
+                    defaultValue="0.10"
+                    onChange={(value) => setGravamenRate(parseFloat(value))}
                   >
-                    {/* Columna Izquierda */}
-                    <div>
-                      <Card hoverable style={{ padding: "20px" }}>
-                        <h4 style={{ color: "#444" }}>Precios</h4>
-                        <p>
-                          <b>Valor Declarado FOB:</b>{" "}
-                          {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}{" "}
-                          <InputNumber
-                            value={vehicle.Valor}
-                            onChange={(newValue) =>
-                              updateFOB(vehicle.key, newValue)
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <p>
-                          <b>Seguro:</b>{" "}
-                          {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
-                          <InputNumber
-                            value={vehicle.Seguro}
-                            onChange={(newValue) =>
-                              updateSeguro(vehicle.key, newValue ?? 0)
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <p>
-                          <b>Flete:</b>{" "}
-                          {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
-                          <InputNumber
-                            value={vehicle.Flete}
-                            onChange={(newValue) =>
-                              updateFlete(vehicle.key, newValue ?? 0)
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <hr />
-                        <p>
-                          <b>Total CIF:</b>{" "}
-                          {formatCurrency(
-                            ((vehicle.Valor || 0) +
-                              (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                              (vehicle.Flete ?? 800) +
-                              350) *
-                              exchangeRate,
-                            "DOP"
-                          )}{" "}
-                          /{" "}
-                          {formatCurrency(
-                            (vehicle.Valor || 0) +
-                              (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                              (vehicle.Flete ?? 800) +
-                              350,
-                            "USD"
-                          )}
-                        </p>
-                      </Card>
-                    </div>
-
-                    {/* Columna Derecha */}
-                    <div>
-                      <Card hoverable style={{ padding: "30px" }}>
-                        <h4 style={{ color: "#444" }}>Aduanas</h4>
-                        <p>
-                          <b>Gravamen:</b> {calculateTaxes(vehicle).Gravamen}
-                        </p>
-                        <p>
-                          <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
-                        </p>
-                        <p>
-                          <b>Servicio Aduanero:</b>{" "}
-                          <InputNumber
-                            value={servicioAduaneroValue}
-                            onChange={(newValue) =>
-                              setServicioAduaneroValue(newValue ?? 0)
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <hr />
-                        <p>
-                          <b>Total Aduanas:</b>{" "}
-                          {calculateTaxes(vehicle).Total_regimen}
-                        </p>
-                      </Card>
-                    </div>
-
-                    {/* Parte Inferior Izquierda */}
-                    <div>
-                      <Card hoverable style={{ padding: "20px" }}>
-                        <h4 style={{ color: "#444" }}>Otros Impuestos</h4>
-                        <p>
-                          <b>CO2:</b> {calculateTaxes(vehicle).Co2}
-                        </p>
-                        <p>
-                          <b>Placa:</b> {calculateTaxes(vehicle).Placa}
-                        </p>
-                        <p>
-                          <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
-                          <InputNumber
-                            value={marbeteValue}
-                            onChange={(newValue) =>
-                              setMarbeteValue(newValue ?? 0)
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <hr />
-                        <p>
-                          <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
-                        </p>
-                      </Card>
-                    </div>
-
-                    {/* Parte Inferior Derecha */}
-                    <div>
-                      <Card
-                        hoverable
-                        style={{ padding: "20px", background: "#fdfdfd" }}
-                      >
-                        <h4 style={{ color: "#444" }}>Declaración Final</h4>{" "}
-                        <p>
-                          <b>Total Aduanas:</b>{" "}
-                          {calculateTaxes(vehicle).Total_regimen}
-                        </p>
-                        <p>
-                          <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
-                        </p>
-                        <p>
-                          <b>Valor Vehículo:</b>{" "}
-                          {formatCurrency(
-                            (vehicle.ValorVehiculo ?? vehicle.Valor) *
-                              exchangeRate,
-                            "DOP"
-                          )}{" "}
-                          <InputNumber
-                            value={vehicle.ValorVehiculo ?? vehicle.Valor}
-                            onChange={(newValue) =>
-                              setSelectedVehicles((prevVehicles) =>
-                                prevVehicles.map((v) =>
-                                  v.key === vehicle.key
-                                    ? { ...v, ValorVehiculo: newValue ?? 0 }
-                                    : v
-                                )
-                              )
-                            }
-                            style={{ marginLeft: "10px", width: "120px" }}
-                          />
-                        </p>
-                        <hr />
-                        <p>
-                          <b>Total + Impuestos:</b>{" "}
-                          {calculateTaxes(vehicle).Total}
-                        </p>
-                      </Card>
-                    </div>
-                  </div>
+                    <Select.Option value="0.10">Gravamen 10%</Select.Option>
+                    <Select.Option value="0.20">Gravamen 20%</Select.Option>
+                    <Select.Option value="0.30">Gravamen 30%</Select.Option>
+                  </Select>
+                  <Select
+                    defaultValue="0.01"
+                    onChange={(value) => setCo2Rate(parseFloat(value))}
+                  >
+                    <Select.Option value="0.01">Co2 1%</Select.Option>
+                    <Select.Option value="0.02">Co2 2%</Select.Option>
+                    <Select.Option value="0.03">Co2 3%</Select.Option>
+                  </Select>
                 </div>
               </div>
-            );
-          })}
+
+              <div className="grid-container">
+                <Card className="price-card">
+                  <h4>Precios</h4>
+                  <p>
+                    <b>Valor Declarado FOB:</b>
+
+                    {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
+
+                    <InputNumber
+                      value={vehicle.Valor}
+                      onChange={(newValue) =>
+                        updateFOB(vehicle.key, newValue ?? 0)
+                      }
+                      style={{ marginLeft: "10px", width: "120px" }}
+                    />
+                  </p>
+
+                  <p>
+                    <b>Seguro:</b>{" "}
+                    {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
+                    <InputNumber
+                      value={vehicle.Seguro}
+                      onChange={(newValue) =>
+                        updateSeguro(vehicle.key, newValue ?? 0)
+                      }
+                    />
+                  </p>
+                  <p>
+                    <b>Flete:</b>{" "}
+                    {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
+                    <InputNumber
+                      value={vehicle.Flete}
+                      onChange={(newValue) =>
+                        updateFlete(vehicle.key, newValue ?? 0)
+                      }
+                    />
+                  </p>
+                  <hr />
+                  <p>
+                    <b>Total CIF:</b>{" "}
+                    {formatCurrency(
+                      ((vehicle.Valor || 0) +
+                        (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                        (vehicle.Flete ?? 800) +
+                        350) *
+                        exchangeRate,
+                      "DOP"
+                    )}{" "}
+                    /{" "}
+                    {formatCurrency(
+                      (vehicle.Valor || 0) +
+                        (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                        (vehicle.Flete ?? 800) +
+                        350,
+                      "USD"
+                    )}
+                  </p>
+                </Card>
+
+                <Card className="customs-card">
+                  <h4>Aduanas</h4>
+                  <p>
+                    <b>Gravamen:</b> {calculateTaxes(vehicle).Gravamen}
+                  </p>
+                  <p>
+                    <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
+                  </p>
+                  <p>
+                    <b>Servicio Aduanero:</b>{" "}
+                    <InputNumber
+                      value={servicioAduaneroValue}
+                      onChange={(newValue) =>
+                        setServicioAduaneroValue(newValue ?? 0)
+                      }
+                    />
+                  </p>
+                  <hr />
+                  <p>
+                    <b>Total Aduanas:</b>{" "}
+                    {calculateTaxes(vehicle).Total_regimen}
+                  </p>
+                </Card>
+
+                <Card className="taxes-card">
+                  <h4>Otros Impuestos</h4>
+                  <p>
+                    <b>CO2:</b> {calculateTaxes(vehicle).Co2}
+                  </p>
+                  <p>
+                    <b>Placa:</b> {calculateTaxes(vehicle).Placa}
+                  </p>
+                  <p>
+                    <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
+                    <InputNumber
+                      value={marbeteValue}
+                      onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
+                    />
+                  </p>
+                  <hr />
+                  <p>
+                    <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
+                  </p>
+                </Card>
+
+                <Card className="final-declaration-card">
+                  <h4>Declaración Final</h4>
+                  <p>
+                    <b>Total Aduanas:</b>{" "}
+                    {calculateTaxes(vehicle).Total_regimen}
+                  </p>
+                  <p>
+                    <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
+                  </p>
+                  <p>
+                    <b>Valor Vehículo:</b>{" "}
+                    {formatCurrency(
+                      (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate,
+                      "DOP"
+                    )}{" "}
+                    <InputNumber
+                      value={vehicle.ValorVehiculo ?? vehicle.Valor}
+                      onChange={(newValue) =>
+                        setSelectedVehicles((prevVehicles) =>
+                          prevVehicles.map((v) =>
+                            v.key === vehicle.key
+                              ? { ...v, ValorVehiculo: newValue ?? 0 }
+                              : v
+                          )
+                        )
+                      }
+                    />
+                  </p>
+                  <hr />
+                  <p>
+                    <b>Total + Impuestos:</b> {calculateTaxes(vehicle).Total}
+                  </p>
+                </Card>
+              </div>
+            </div>
+          ))}
         </Card>
       )}
     </div>
   );
 };
+
 export default App;

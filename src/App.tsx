@@ -9,7 +9,7 @@ export default function App() {
         </h1>
       </center>
       <br></br>
-      <UsersPage></UsersPage>        
+      <UsersPage></UsersPage>
       <center>
         <p>By K3d Technology</p>
       </center>

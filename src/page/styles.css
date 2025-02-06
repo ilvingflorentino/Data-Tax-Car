@@ -1,35 +1,164 @@
+/* Estilos generales */
+body {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+  padding: auto;
+  background-color: #c7c7c7;
+  color: #333;
+}
 
 .container {
-  margin-top: 20px;
+  padding: 16px;
+  background: #85858e;
+  border-radius: 10px;
 }
 
 .filters {
   display: flex;
-  gap: 10px; /* Espacio entre los filtros */
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.filters .ant-input {
+  flex: 1;
+}
+
+.results-card {
+  margin-top: 16px;
+  padding: 20px;
+}
+
+.vehicle-card {
+  margin-bottom: 30px;
+}
+
+.vehicle-title {
+  text-align: center;
+  margin-bottom: 10px;
+  color: #000;
+}
+
+.rate-section {
+  text-align: center;
   margin-bottom: 20px;
 }
 
-.table-container {
-  margin-top: 20px;
+.rate-section h3 {
+  margin-bottom: 10px;
+  color: #000;
 }
 
-.table {
-  width: 100%;
-  border-collapse: collapse;
+.rate-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
-.table th,
-.table td {
-  border: 1px solid #ddd;
-  padding: 8px;
+.grid-container {
+  display: grid;
+  grid-template-columns: 1fr 1fr; /* Dos columnas */
+  grid-template-rows: 1fr 1fr; /* Dos filas */
+  gap: 10px; /* Espacio entre tarjetas (simula la cruz blanca) */
 }
 
-.table th {
-  background-color: #f2f2f2;
-  text-align: left;
+.price-card,
+.customs-card,
+.taxes-card,
+.final-declaration-card {
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  padding: auto;
+  transition: transform 1.2s, box-shadow 0.2s;
 }
 
-.table img {
-  display: block;
-  margin: 0 auto;
+.price-card:hover,
+.customs-card:hover,
+.taxes-card:hover,
+.final-declaration-card:hover {
+  transform: translateY(-10px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.price-card h4,
+.customs-card h4,
+.taxes-card h4,
+.final-declaration-card h4 {
+  color: #444;
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.Data {
+  text-align: center;
+  color: #e40000;
+}
+
+.price-card p,
+.customs-card p,
+.taxes-card p,
+.final-declaration-card p {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 10px 0;
+}
+
+.price-card hr,
+.customs-card hr,
+.taxes-card hr,
+.final-declaration-card hr {
+  border: 5px;
+  height: 2px;
+  background: #000000;
+  margin: 15px 0;
+}
+
+.price-card .total,
+.customs-card .total,
+.taxes-card .total,
+.final-declaration-card .total {
+  font-weight: bold;
+  margin-top: 10px;
+  text-align: right;
+}
+
+/*Resposive */
+
+@media (max-width: 768px) {
+  .grid-container {
+    grid-template-columns: 1fr;
+  }
+
+  .price-card,
+  .customs-card,
+  .taxes-card,
+  .final-declaration-card {
+    padding: 15px;
+  }
+
+  .price-card h4,
+  .customs-card h4,
+  .taxes-card h4,
+  .final-declaration-card h4 {
+    font-size: 1.1em;
+  }
+
+  .price-card p,
+  .customs-card p,
+  .taxes-card p,
+  .final-declaration-card p {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .price-card .ant-input-number,
+  .customs-card .ant-input-number,
+  .taxes-card .ant-input-number,
+  .final-declaration-card .ant-input-number {
+    width: 100%;
+    margin-left: 0;
+    margin-top: 5px;
+  }
 }
