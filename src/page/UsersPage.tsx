@@ -24,7 +24,7 @@ const App: React.FC = () => {
   const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
-  const [marbeteValue, setMarbeteValue] = useState<number>(50.41); // Siempre en RD$
+  const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Valor fijo en RD$
   const [servicioAduaneroValue, setServicioAduaneroValue] =
     useState<number>(8756.31); // Servicio Aduanero editable
 
@@ -112,63 +112,55 @@ const App: React.FC = () => {
     });
   };
   const calculateTaxes = (vehicle: DataType) => {
-    const fob = vehicle.Valor;
-    const seguro = vehicle.Seguro ?? fob * 0.02;
-    const flete = vehicle.Flete ?? 800;
-    const otros = 350.0;
-    const cif_total = fob + seguro + flete + otros;
+    const fob = vehicle.Valor; // USD
+    const seguro = vehicle.Seguro ?? fob * 0.02; // USD
+    const flete = vehicle.Flete ?? 800; // USD
+    const otros = 350.0; // USD
+    const cif_total = fob + seguro + flete + otros; // USD
 
-    // Conversión de CIF a RD$
-    const cifRD = cif_total * exchangeRate;
-
-    // Gravamen dinámico
+    // Gravamen dinámico (USD)
     const gravamen =
       vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS"
         ? 0
         : cif_total * gravamenRate;
 
-    // ITBIS
+    // ITBIS (USD)
     const itbis = (cif_total + gravamen) * 0.18;
 
-    // CO2
+    // CO2 y Placa (USD)
     const co2 = cif_total * co2Rate;
-
-    // Placa
     const placa = cif_total * 0.17;
 
-    const marbete = marbeteValue;
-    // Total DGII
+    // Total DGII (DOP) - Marbete ya está en DOP
+    const totalDgiiUSD = co2 + placa; // USD
+    const totalDgiiDOP = totalDgiiUSD * exchangeRate + marbeteValue; // Convertimos CO2 y Placa a DOP y sumamos marbete
 
-    const totalDgii = co2 + placa + marbeteValue; // Marbete ya está en RD$
+    // Total Aduanas (DOP) - Convertimos todo a DOP
+    const total_regimenDOP =
+      (gravamen + itbis) * exchangeRate + servicioAduaneroValue;
 
-    // Servicio Aduanero ya está en RD$
-    const total_regimen = gravamen + itbis;
-    const totalAduanas = total_regimen + servicioAduaneroValue;
+    // Valor Vehículo en DOP
+    const valorVehiculoDOP =
+      (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate;
 
-    // Total de impuestos en RD$
-    const totalImpuestos = totalAduanas + totalDgii + cifRD;
+    // Total Final (DOP)
+    const TotalDOP = total_regimenDOP + totalDgiiDOP + valorVehiculoDOP;
 
-    const CalculoTotalDgii = totalDgii;
-    const Total = total_regimen + totalDgii;
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
-      CIF: formatCurrency(cifRD, "DOP"),
+      CIF: formatCurrency(cif_total * exchangeRate, "DOP"),
       Seguro: formatCurrency(seguro * exchangeRate, "DOP"),
       Flete: formatCurrency(flete * exchangeRate, "DOP"),
       Otros: formatCurrency(otros * exchangeRate, "DOP"),
       Gravamen: formatCurrency(gravamen * exchangeRate, "DOP"),
       ITBIS: formatCurrency(itbis * exchangeRate, "DOP"),
-      Total_regimen: formatCurrency(total_regimen * exchangeRate, "DOP"),
+      Total_regimen: formatCurrency(total_regimenDOP, "DOP"),
       Co2: formatCurrency(co2 * exchangeRate, "DOP"),
       Placa: formatCurrency(placa * exchangeRate, "DOP"),
-      servicioAduanero: formatCurrency(servicioAduaneroValue, "DOP"),
-      cifRD: formatCurrency(cifRD, "DOP"),
-      totalAduanas: formatCurrency(totalAduanas, "DOP"),
-      totalDgii: formatCurrency(totalDgii, "DOP"),
-      totalImpuestos: formatCurrency(totalImpuestos, "DOP"),
-      Marbete: `RD$ ${marbete.toFixed(2)}`, // ✅ Se mantiene en RD$
-      CalculoTotalDgii: formatCurrency(CalculoTotalDgii, "DOP"),
-      Total: formatCurrency(Total * exchangeRate, "DOP"),
+      totalDgii: formatCurrency(totalDgiiDOP, "DOP"),
+      Marbete: formatCurrency(marbeteValue, "DOP"),
+      ValorVehiculo: formatCurrency(valorVehiculoDOP, "DOP"),
+      Total: formatCurrency(TotalDOP, "DOP"),
     };
   };
 
@@ -259,34 +251,14 @@ const App: React.FC = () => {
       {selectedVehicles.length > 0 && (
         <Card
           title="Resultados de los cálculos"
-          style={{
-            marginTop: "16px",
-            padding: "20px",
-            background: "#ffffff",
-            borderRadius: "10px",
-            boxShadow: "0 4px 8px rgba(0,0,0,0.1)",
-          }}
+          style={{ marginTop: "16px", padding: "20px" }}
         >
           {selectedVehicles.map((vehicle, index) => {
             return (
-              <div
-                key={index}
-                style={{
-                  marginBottom: "30px",
-                  padding: "20px",
-                  background: "#f9f9f9",
-                  borderRadius: "8px",
-                }}
-              >
+              <div key={index} style={{ marginBottom: "30px" }}>
                 <p>
                   <b>
-                    <h2
-                      style={{
-                        textAlign: "center",
-                        marginBottom: "15px",
-                        color: "#333",
-                      }}
-                    >
+                    <h2 style={{ textAlign: "center", marginBottom: "10px" }}>
                       {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                       {vehicle.Pais}
                     </h2>
@@ -295,13 +267,13 @@ const App: React.FC = () => {
                 <div
                   style={{
                     padding: "16px",
-                    background: "#f0f2f5",
+                    background: "#85858e",
                     borderRadius: "10px",
                   }}
                 >
                   {/* Tasa */}
                   <div style={{ textAlign: "center", marginBottom: "20px" }}>
-                    <h3 style={{ marginBottom: "10px", color: "#555" }}>
+                    <h3 style={{ marginBottom: "10px", color: "#000" }}>
                       Tasa
                     </h3>
                     <div>
@@ -352,59 +324,44 @@ const App: React.FC = () => {
                   >
                     {/* Columna Izquierda */}
                     <div>
-                      <Card
-                        hoverable
-                        style={{ padding: "20px", background: "#fdfdfd" }}
-                      >
+                      <Card hoverable style={{ padding: "20px" }}>
                         <h4 style={{ color: "#444" }}>Precios</h4>
-
                         <p>
-                          <b>Valor FOB:</b> RD${" "}
-                          {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
+                          <b>Valor Declarado FOB:</b>{" "}
+                          {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}{" "}
                           <InputNumber
                             value={vehicle.Valor}
-                            onChange={(newValue) => {
-                              if (newValue !== null) {
-                                updateFOB(vehicle.key, newValue);
-                                setSelectedVehicles((prevVehicles) =>
-                                  prevVehicles.map((v) =>
-                                    v.key === vehicle.key
-                                      ? { ...v, ValorVehiculo: newValue }
-                                      : v
-                                  )
-                                );
-                              }
-                            }}
+                            onChange={(newValue) =>
+                              updateFOB(vehicle.key, newValue)
+                            }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
                         <p>
-                          <b>Seguro:</b> RD${" "}
+                          <b>Seguro:</b>{" "}
                           {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
                           <InputNumber
                             value={vehicle.Seguro}
-                            onChange={(newValue) => {
-                              if (newValue !== null) {
-                                updateSeguro(vehicle.key, newValue);
-                              }
-                            }}
+                            onChange={(newValue) =>
+                              updateSeguro(vehicle.key, newValue ?? 0)
+                            }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
                         <p>
-                          <b>Flete:</b> RD${" "}
+                          <b>Flete:</b>{" "}
                           {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
                           <InputNumber
                             value={vehicle.Flete}
-                            onChange={(newValue) => {
-                              if (newValue !== null) {
-                                updateFlete(vehicle.key, newValue);
-                              }
-                            }}
+                            onChange={(newValue) =>
+                              updateFlete(vehicle.key, newValue ?? 0)
+                            }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
-
                         <hr />
                         <p>
-                          <b>Total CIF:</b> RD${" "}
+                          <b>Total CIF:</b>{" "}
                           {formatCurrency(
                             ((vehicle.Valor || 0) +
                               (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -413,7 +370,7 @@ const App: React.FC = () => {
                               exchangeRate,
                             "DOP"
                           )}{" "}
-                          / USD{" "}
+                          /{" "}
                           {formatCurrency(
                             (vehicle.Valor || 0) +
                               (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -427,10 +384,7 @@ const App: React.FC = () => {
 
                     {/* Columna Derecha */}
                     <div>
-                      <Card
-                        hoverable
-                        style={{ padding: "20px", background: "#fdfdfd" }}
-                      >
+                      <Card hoverable style={{ padding: "30px" }}>
                         <h4 style={{ color: "#444" }}>Aduanas</h4>
                         <p>
                           <b>Gravamen:</b> {calculateTaxes(vehicle).Gravamen}
@@ -439,38 +393,26 @@ const App: React.FC = () => {
                           <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
                         </p>
                         <p>
-                          <b>Servicio Aduanero:</b> RD${" "}
+                          <b>Servicio Aduanero:</b>{" "}
                           <InputNumber
                             value={servicioAduaneroValue}
-                            onChange={(newValue) => {
-                              if (newValue !== null) {
-                                setServicioAduaneroValue(newValue);
-                              }
-                            }}
+                            onChange={(newValue) =>
+                              setServicioAduaneroValue(newValue ?? 0)
+                            }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
                         <hr />
                         <p>
-                          <b>Total Aduanero:</b> RD${" "}
-                          {formatCurrency(
-                            parseFloat(
-                              calculateTaxes(vehicle).Total_regimen.replace(
-                                /[^0-9.-]+/g,
-                                ""
-                              )
-                            ) + servicioAduaneroValue,
-                            "DOP"
-                          )}
+                          <b>Total Aduanas:</b>{" "}
+                          {calculateTaxes(vehicle).Total_regimen}
                         </p>
                       </Card>
                     </div>
 
                     {/* Parte Inferior Izquierda */}
                     <div>
-                      <Card
-                        hoverable
-                        style={{ padding: "20px", background: "#fdfdfd" }}
-                      >
+                      <Card hoverable style={{ padding: "20px" }}>
                         <h4 style={{ color: "#444" }}>Otros Impuestos</h4>
                         <p>
                           <b>CO2:</b> {calculateTaxes(vehicle).Co2}
@@ -479,26 +421,18 @@ const App: React.FC = () => {
                           <b>Placa:</b> {calculateTaxes(vehicle).Placa}
                         </p>
                         <p>
-                          <b>Marbete:</b> RD${" "}
+                          <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
                           <InputNumber
                             value={marbeteValue}
                             onChange={(newValue) =>
                               setMarbeteValue(newValue ?? 0)
                             }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
                         <hr />
                         <p>
-                          <b>Total DGII:</b> RD${" "}
-                          {formatCurrency(
-                            parseFloat(
-                              calculateTaxes(vehicle).totalDgii.replace(
-                                /[^0-9.-]+/g,
-                                ""
-                              )
-                            ) * exchangeRate,
-                            "DOP"
-                          )}
+                          <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
                         </p>
                       </Card>
                     </div>
@@ -509,72 +443,39 @@ const App: React.FC = () => {
                         hoverable
                         style={{ padding: "20px", background: "#fdfdfd" }}
                       >
-                        <h4 style={{ color: "#444" }}>Declaración Final</h4>
+                        <h4 style={{ color: "#444" }}>Declaración Final</h4>{" "}
                         <p>
                           <b>Total Aduanas:</b>{" "}
-                          {formatCurrency(
-                            parseFloat(
-                              calculateTaxes(vehicle).Total_regimen.replace(
-                                /[^0-9.-]+/g,
-                                ""
-                              )
-                            ) + servicioAduaneroValue,
-                            "DOP"
-                          )}
+                          {calculateTaxes(vehicle).Total_regimen}
                         </p>
                         <p>
-                          <b>Total DGII:</b>{" "}
-                          {formatCurrency(
-                            parseFloat(
-                              calculateTaxes(vehicle).totalDgii.replace(
-                                /[^0-9.-]+/g,
-                                ""
-                              )
-                            ) * exchangeRate,
-                            "DOP"
-                          )}
+                          <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
                         </p>
-
                         <p>
-                          <b>Valor Vehículo:</b> RD${" "}
+                          <b>Valor Vehículo:</b>{" "}
                           {formatCurrency(
                             (vehicle.ValorVehiculo ?? vehicle.Valor) *
                               exchangeRate,
                             "DOP"
-                          )}
+                          )}{" "}
                           <InputNumber
-                            style={{ width: "150px", marginLeft: "10px" }}
-                            value={vehicle.ValorVehiculo ?? vehicle.Valor} // Si no hay ValorVehiculo, usa FOB
-                            placeholder="Valor Adicional"
-                            onChange={(newValue) => {
-                              if (newValue !== null) {
-                                setSelectedVehicles((prevVehicles) =>
-                                  prevVehicles.map((v) =>
-                                    v.key === vehicle.key
-                                      ? { ...v, ValorVehiculo: newValue } // SOLO cambia ValorVehiculo
-                                      : v
-                                  )
-                                );
-                              }
-                            }}
+                            value={vehicle.ValorVehiculo ?? vehicle.Valor}
+                            onChange={(newValue) =>
+                              setSelectedVehicles((prevVehicles) =>
+                                prevVehicles.map((v) =>
+                                  v.key === vehicle.key
+                                    ? { ...v, ValorVehiculo: newValue ?? 0 }
+                                    : v
+                                )
+                              )
+                            }
+                            style={{ marginLeft: "10px", width: "120px" }}
                           />
                         </p>
-                        <hr></hr>
+                        <hr />
                         <p>
-                          <b>Total + Impuestos</b>
-                          <span
-                            style={{ marginLeft: "10px", fontWeight: "bold" }}
-                          >
-                            RD${" "}
-                            {formatCurrency(
-                              parseFloat(
-                                calculateTaxes(
-                                  selectedVehicles[0]
-                                ).Total.replace(/[^0-9.-]+/g, "")
-                              ) || 0 * exchangeRate,
-                              "DOP"
-                            )}
-                          </span>
+                          <b>Total + Impuestos:</b>{" "}
+                          {calculateTaxes(vehicle).Total}
                         </p>
                       </Card>
                     </div>
