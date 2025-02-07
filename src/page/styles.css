@@ -65,12 +65,27 @@ body {
 .center-currency {
   display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
   text-align: center; /* Centra el texto horizontalmente */
-  width: 20px; /* Ocupa el 100% del contenedor */
+  width: 09px; /* Ocupa el 100% del contenedor */
 }
 .center-currencyFlete {
   display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
   text-align: center; /* Centra el texto horizontalmente */
-  width: 05px; /* Ocupa el 100% del contenedor */
+  width: 0px; /* Ocupa el 100% del contenedor */
+}
+.center-currencyCIF {
+  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
+  text-align: center; /* Centra el texto horizontalmente */
+  width: 62px; /* Ocupa el 100% del contenedor */
+}
+.center-currencyDOP {
+  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
+  text-align: center; /* Centra el texto horizontalmente */
+  width: 79px; /* Ocupa el 100% del contenedor */
+}
+.center-currencyTOTAL {
+  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
+  text-align: center; /* Centra el texto horizontalmente */
+  width: 180px; /* Ocupa el 100% del contenedor */
 }
 /* Estilo para alinear el texto a la derecha en los InputNumber */
 .right-align-input .ant-input-number-input {

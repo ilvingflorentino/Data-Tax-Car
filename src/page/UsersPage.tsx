@@ -199,10 +199,8 @@ const App: React.FC = () => {
   ];
 
   //cuando se modifique el fob debe actulizar valor vehicuolo.
-  //alinar puntos sobre puntos.
 
   //total CIF, alinados con datos.
-  //igualdad de columna superior por inferior
 
   return (
     <div className="container">
@@ -303,6 +301,7 @@ const App: React.FC = () => {
 
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"US"}
                       value={vehicle.Valor}
                       precision={2}
                       onChange={(newValue) =>
@@ -310,7 +309,7 @@ const App: React.FC = () => {
                       }
                       style={{
                         marginLeft: "10px",
-                        width: "90px",
+                        width: "120px",
                       }}
                     />
                   </p>
@@ -322,11 +321,16 @@ const App: React.FC = () => {
                     </span>
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"US"}
                       value={vehicle.Seguro}
                       precision={2}
                       onChange={(newValue) =>
                         updateSeguro(vehicle.key, newValue ?? 0)
                       }
+                      style={{
+                        marginLeft: "10px",
+                        width: "120px",
+                      }}
                     />
                   </p>
                   <p>
@@ -336,17 +340,22 @@ const App: React.FC = () => {
                     </span>
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"US"}
                       value={vehicle.Flete}
                       precision={2}
                       onChange={(newValue) =>
                         updateFlete(vehicle.key, newValue ?? 0)
                       }
+                      style={{
+                        marginLeft: "10px",
+                        width: "120px",
+                      }}
                     />
                   </p>
                   <hr />
                   <p>
                     <b>Total CIF:</b>{" "}
-                    <span className="center-currency">
+                    <span className="center-currencyCIF">
                       {formatCurrency(
                         ((vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -357,13 +366,17 @@ const App: React.FC = () => {
                       )}
                     </span>
                     <span className="right-align-input">
-                      {formatCurrency(
-                        (vehicle.Valor || 0) +
-                          (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                          (vehicle.Flete ?? 800) +
-                          350,
-                        "USD"
-                      )}
+                      <div className="inputprice">
+                        <b>US</b>
+                        {formatCurrency(
+                          (vehicle.Valor || 0) +
+                            (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                            (vehicle.Flete ?? 800) +
+                            350,
+                          "USD"
+                        )}{" "}
+                        {""}
+                      </div>
                     </span>
                   </p>
                 </Card>
@@ -377,14 +390,19 @@ const App: React.FC = () => {
                     <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
                   </p>
                   <p>
-                    <b>Servicio Aduanero:</b>{" "}
+                    <b>Servicio Aduanero:</b> {""}
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"DOP"}
                       value={servicioAduaneroValue}
                       precision={2}
                       onChange={(newValue) =>
                         setServicioAduaneroValue(newValue ?? 0)
                       }
+                      style={{
+                        marginLeft: "10px",
+                        width: "130px",
+                      }}
                     />
                   </p>
                   <hr />
@@ -406,9 +424,14 @@ const App: React.FC = () => {
                     <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"DOP"}
                       value={marbeteValue}
                       precision={2}
                       onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
+                      style={{
+                        marginLeft: "10px",
+                        width: "130px",
+                      }}
                     />
                   </p>
                   <hr />
@@ -426,7 +449,6 @@ const App: React.FC = () => {
                   <p>
                     <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
                   </p>
-
                   <p>
                     <b>Valor Vehículo:</b>{" "}
                     {formatCurrency(
@@ -435,6 +457,7 @@ const App: React.FC = () => {
                     )}{" "}
                     <InputNumber
                       className="right-align-input"
+                      addonBefore={"US"}
                       value={vehicle.ValorVehiculo ?? vehicle.Valor}
                       precision={2}
                       onChange={(newValue) =>
@@ -446,11 +469,39 @@ const App: React.FC = () => {
                           )
                         )
                       }
+                      style={{
+                        marginLeft: "10px",
+                        width: "120px",
+                      }}
                     />
                   </p>
                   <hr />
                   <p>
-                    <b>Total + Impuestos:</b> {calculateTaxes(vehicle).Total}
+                    <b>Total + Impuestos:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Total.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+
+                    <span className="center-currencyTOTAL">
+                      Precio en <b>US</b>:{" "}
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Total.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                 </Card>
               </div>
