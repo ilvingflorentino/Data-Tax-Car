@@ -200,7 +200,7 @@ const App: React.FC = () => {
 
   //cuando se modifique el fob debe actulizar valor vehicuolo.
   //alinar puntos sobre puntos.
-  //poner decimase a intup
+
   //total CIF, alinados con datos.
   //igualdad de columna superior por inferior
 
@@ -302,19 +302,28 @@ const App: React.FC = () => {
                     {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
 
                     <InputNumber
+                      className="right-align-input"
                       value={vehicle.Valor}
+                      precision={2}
                       onChange={(newValue) =>
                         updateFOB(vehicle.key, newValue ?? 0)
                       }
-                      style={{ marginLeft: "10px", width: "120px" }}
+                      style={{
+                        marginLeft: "10px",
+                        width: "90px",
+                      }}
                     />
                   </p>
 
                   <p>
                     <b>Seguro:</b>{" "}
-                    {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
+                    <span className="center-currency">
+                      {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
+                    </span>
                     <InputNumber
+                      className="right-align-input"
                       value={vehicle.Seguro}
+                      precision={2}
                       onChange={(newValue) =>
                         updateSeguro(vehicle.key, newValue ?? 0)
                       }
@@ -322,9 +331,13 @@ const App: React.FC = () => {
                   </p>
                   <p>
                     <b>Flete:</b>{" "}
-                    {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
+                    <span className="center-currencyFlete">
+                      {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
+                    </span>
                     <InputNumber
+                      className="right-align-input"
                       value={vehicle.Flete}
+                      precision={2}
                       onChange={(newValue) =>
                         updateFlete(vehicle.key, newValue ?? 0)
                       }
@@ -333,22 +346,25 @@ const App: React.FC = () => {
                   <hr />
                   <p>
                     <b>Total CIF:</b>{" "}
-                    {formatCurrency(
-                      ((vehicle.Valor || 0) +
-                        (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                        (vehicle.Flete ?? 800) +
-                        350) *
-                        exchangeRate,
-                      "DOP"
-                    )}{" "}
-                    /{" "}
-                    {formatCurrency(
-                      (vehicle.Valor || 0) +
-                        (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                        (vehicle.Flete ?? 800) +
-                        350,
-                      "USD"
-                    )}
+                    <span className="center-currency">
+                      {formatCurrency(
+                        ((vehicle.Valor || 0) +
+                          (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                          (vehicle.Flete ?? 800) +
+                          350) *
+                          exchangeRate,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="right-align-input">
+                      {formatCurrency(
+                        (vehicle.Valor || 0) +
+                          (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                          (vehicle.Flete ?? 800) +
+                          350,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                 </Card>
 
@@ -363,7 +379,9 @@ const App: React.FC = () => {
                   <p>
                     <b>Servicio Aduanero:</b>{" "}
                     <InputNumber
+                      className="right-align-input"
                       value={servicioAduaneroValue}
+                      precision={2}
                       onChange={(newValue) =>
                         setServicioAduaneroValue(newValue ?? 0)
                       }
@@ -387,7 +405,9 @@ const App: React.FC = () => {
                   <p>
                     <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
                     <InputNumber
+                      className="right-align-input"
                       value={marbeteValue}
+                      precision={2}
                       onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
                     />
                   </p>
@@ -414,7 +434,9 @@ const App: React.FC = () => {
                       "DOP"
                     )}{" "}
                     <InputNumber
+                      className="right-align-input"
                       value={vehicle.ValorVehiculo ?? vehicle.Valor}
+                      precision={2}
                       onChange={(newValue) =>
                         setSelectedVehicles((prevVehicles) =>
                           prevVehicles.map((v) =>

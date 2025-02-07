@@ -11,7 +11,7 @@ export default function App() {
       <br></br>
       <UsersPage></UsersPage>
       <center>
-        <p>By K3d Technology</p>
+        <b>By K3D Technology.</b>
       </center>
     </div>
   );
