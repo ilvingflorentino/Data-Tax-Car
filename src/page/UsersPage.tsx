@@ -16,8 +16,6 @@ interface DataType {
   Especificaciones: string;
 }
 
-//Columnas de dolares a la derecha y columnas de pesos a la izquierda
-
 const App: React.FC = () => {
   const [data, setData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -529,6 +527,7 @@ const App: React.FC = () => {
 
                 <Card className="price-card">
                   <h3>Otros Impuestos</h3>
+                  <hr></hr>
                   <div
                     style={{
                       display: "flex",
@@ -642,6 +641,7 @@ const App: React.FC = () => {
 
                 <Card className="price-card">
                   <h3>Declaración Final</h3>
+                  <hr></hr>
                   <div
                     style={{
                       display: "flex",
