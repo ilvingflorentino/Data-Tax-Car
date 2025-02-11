@@ -16,6 +16,8 @@ interface DataType {
   Especificaciones: string;
 }
 
+//Columnas de dolares a la derecha y columnas de pesos a la izquierda
+
 const App: React.FC = () => {
   const [data, setData] = useState<DataType[]>([]);
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
@@ -296,9 +298,9 @@ const App: React.FC = () => {
                   <h4>Precios</h4>
                   <p>
                     <b>Valor Declarado FOB:</b>
-
-                    {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
-
+                    <span className="center-currencyDOP">
+                      {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
+                    </span>
                     <InputNumber
                       className="right-align-input"
                       addonBefore={"US"}
@@ -307,17 +309,13 @@ const App: React.FC = () => {
                       onChange={(newValue) =>
                         updateFOB(vehicle.key, newValue ?? 0)
                       }
-                      style={{
-                        marginLeft: "10px",
-                        width: "120px",
-                      }}
+                      style={{ width: "120px" }}
                     />
                   </p>
-
                   <p>
-                    <b>Seguro:</b>{" "}
-                    <span className="center-currency">
-                      {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}{" "}
+                    <b>Seguro:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}
                     </span>
                     <InputNumber
                       className="right-align-input"
@@ -327,16 +325,13 @@ const App: React.FC = () => {
                       onChange={(newValue) =>
                         updateSeguro(vehicle.key, newValue ?? 0)
                       }
-                      style={{
-                        marginLeft: "10px",
-                        width: "120px",
-                      }}
+                      style={{ width: "120px" }}
                     />
                   </p>
                   <p>
-                    <b>Flete:</b>{" "}
-                    <span className="center-currencyFlete">
-                      {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}{" "}
+                    <b>Flete:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}
                     </span>
                     <InputNumber
                       className="right-align-input"
@@ -346,16 +341,13 @@ const App: React.FC = () => {
                       onChange={(newValue) =>
                         updateFlete(vehicle.key, newValue ?? 0)
                       }
-                      style={{
-                        marginLeft: "10px",
-                        width: "120px",
-                      }}
+                      style={{ width: "120px" }}
                     />
                   </p>
                   <hr />
                   <p>
-                    <b>Total CIF:</b>{" "}
-                    <span className="center-currencyCIF">
+                    <b>Total CIF:</b>
+                    <span className="center-currencyDOP">
                       {formatCurrency(
                         ((vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -365,18 +357,15 @@ const App: React.FC = () => {
                         "DOP"
                       )}
                     </span>
-                    <span className="right-align-input">
-                      <div className="inputprice">
-                        <b>US</b>
-                        {formatCurrency(
-                          (vehicle.Valor || 0) +
-                            (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-                            (vehicle.Flete ?? 800) +
-                            350,
-                          "USD"
-                        )}{" "}
-                        {""}
-                      </div>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (vehicle.Valor || 0) +
+                          (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+                          (vehicle.Flete ?? 800) +
+                          350,
+                        "USD"
+                      )}
                     </span>
                   </p>
                 </Card>
@@ -384,13 +373,59 @@ const App: React.FC = () => {
                 <Card className="customs-card">
                   <h4>Aduanas</h4>
                   <p>
-                    <b>Gravamen:</b> {calculateTaxes(vehicle).Gravamen}
+                    <b>Gravamen:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Gravamen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Gravamen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>ITBIS:</b> {calculateTaxes(vehicle).ITBIS}
+                    <b>ITBIS:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).ITBIS.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).ITBIS.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>Servicio Aduanero:</b> {""}
+                    <b>Servicio Aduanero:</b>
                     <InputNumber
                       className="right-align-input"
                       addonBefore={"DOP"}
@@ -399,62 +434,191 @@ const App: React.FC = () => {
                       onChange={(newValue) =>
                         setServicioAduaneroValue(newValue ?? 0)
                       }
-                      style={{
-                        marginLeft: "10px",
-                        width: "130px",
-                      }}
+                      style={{ width: "130px" }}
                     />
                   </p>
                   <hr />
                   <p>
-                    <b>Total Aduanas:</b>{" "}
-                    {calculateTaxes(vehicle).Total_regimen}
+                    <b>Total Aduanas:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Total_regimen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Total_regimen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                 </Card>
 
                 <Card className="taxes-card">
                   <h4>Otros Impuestos</h4>
                   <p>
-                    <b>CO2:</b> {calculateTaxes(vehicle).Co2}
+                    <b>CO2:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Co2.replace(/[^0-9.-]+/g, "")
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Co2.replace(/[^0-9.-]+/g, "")
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>Placa:</b> {calculateTaxes(vehicle).Placa}
+                    <b>Placa:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Placa.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Placa.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>Marbete:</b> {formatCurrency(marbeteValue, "DOP")}{" "}
+                    <b>Marbete:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(marbeteValue, "DOP")}
+                    </span>
                     <InputNumber
                       className="right-align-input"
                       addonBefore={"DOP"}
                       value={marbeteValue}
                       precision={2}
                       onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
-                      style={{
-                        marginLeft: "10px",
-                        width: "130px",
-                      }}
+                      style={{ width: "130px" }}
                     />
                   </p>
                   <hr />
                   <p>
-                    <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
+                    <b>Total DGII:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).totalDgii.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).totalDgii.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                 </Card>
 
                 <Card className="final-declaration-card">
                   <h4>Declaración Final</h4>
                   <p>
-                    <b>Total Aduanas:</b>{" "}
-                    {calculateTaxes(vehicle).Total_regimen}
+                    <b>Total Aduanas:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).Total_regimen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).Total_regimen.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>Total DGII:</b> {calculateTaxes(vehicle).totalDgii}
+                    <b>Total DGII:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        parseFloat(
+                          calculateTaxes(vehicle).totalDgii.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0,
+                        "DOP"
+                      )}
+                    </span>
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
+                      {formatCurrency(
+                        (parseFloat(
+                          calculateTaxes(vehicle).totalDgii.replace(
+                            /[^0-9.-]+/g,
+                            ""
+                          )
+                        ) || 0) / exchangeRate,
+                        "USD"
+                      )}
+                    </span>
                   </p>
                   <p>
-                    <b>Valor Vehículo:</b>{" "}
-                    {formatCurrency(
-                      (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate,
-                      "DOP"
-                    )}{" "}
+                    <b>Valor Vehículo:</b>
+                    <span className="center-currencyDOP">
+                      {formatCurrency(
+                        (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate,
+                        "DOP"
+                      )}
+                    </span>
                     <InputNumber
                       className="right-align-input"
                       addonBefore={"US"}
@@ -469,10 +633,7 @@ const App: React.FC = () => {
                           )
                         )
                       }
-                      style={{
-                        marginLeft: "10px",
-                        width: "120px",
-                      }}
+                      style={{ width: "120px" }}
                     />
                   </p>
                   <hr />
@@ -489,9 +650,8 @@ const App: React.FC = () => {
                         "DOP"
                       )}
                     </span>
-
-                    <span className="center-currencyTOTAL">
-                      Precio en <b>US</b>:{" "}
+                    <span className="left-align-currencyUSD">
+                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Total.replace(

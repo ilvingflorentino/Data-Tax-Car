@@ -18,18 +18,16 @@ body {
   gap: 10px;
   margin-bottom: 16px;
 }
-
-.filters .ant-input {
-  flex: 1;
+.rate-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
 }
 
 .results-card {
   margin-top: 16px;
-  padding: 20px;
-}
-
-.vehicle-card {
-  margin-bottom: 30px;
+  padding: 10px;
 }
 
 .vehicle-title {
@@ -48,12 +46,7 @@ body {
   color: #000;
 }
 
-.rate-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 10px;
-}
+/* envolver todo en el mismo Div Center */
 
 .grid-container {
   display: grid;
@@ -62,48 +55,36 @@ body {
   gap: 20px; /* Espacio entre tarjetas (simula la cruz blanca) */
 }
 
-.center-currency {
-  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
-  text-align: center; /* Centra el texto horizontalmente */
-  width: 09px; /* Ocupa el 100% del contenedor */
-}
-.center-currencyFlete {
-  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
-  text-align: center; /* Centra el texto horizontalmente */
-  width: 0px; /* Ocupa el 100% del contenedor */
-}
-.center-currencyCIF {
-  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
-  text-align: center; /* Centra el texto horizontalmente */
-  width: 62px; /* Ocupa el 100% del contenedor */
-}
 .center-currencyDOP {
-  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
-  text-align: center; /* Centra el texto horizontalmente */
-  width: 79px; /* Ocupa el 100% del contenedor */
-}
-.center-currencyTOTAL {
-  display: inline-block; /* Asegura que el texto se comporte como un bloque en línea */
-  text-align: center; /* Centra el texto horizontalmente */
-  width: 180px; /* Ocupa el 100% del contenedor */
-}
-/* Estilo para alinear el texto a la derecha en los InputNumber */
-.right-align-input .ant-input-number-input {
-  text-align: right; /* Alinea el texto a la derecha */
+  flex: 3;
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+  margin: 0 auto;
 }
 
-/* Opcional: Ajustar el ancho de los InputNumber */
+.left-align-currencyUSD {
+  font-weight: normal;
+  color: #000000;
+}
+
+.right-align-input .ant-input-number-input {
+  text-align: right; /* Alinea el texto dentro del input a la derecha */
+}
+
 .right-align-input .ant-input-number {
   width: 120px; /* Ancho fijo para consistencia */
+  margin-left: auto; /* Alinea el input a la derecha */
 }
+
 .price-card,
 .customs-card,
 .taxes-card,
 .final-declaration-card {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  padding: auto;
+  box-shadow: 0 4px 7px rgba(0, 0, 0, 0.1);
+  padding: 20px;
   transition: transform 1.2s, box-shadow 0.2s;
 }
 
@@ -111,7 +92,7 @@ body {
 .customs-card:hover,
 .taxes-card:hover,
 .final-declaration-card:hover {
-  transform: translateY(-10px);
+  transform: translateY(-20px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -129,17 +110,30 @@ body {
 .taxes-card p,
 .final-declaration-card p {
   display: flex;
-  justify-content: space-between;
-  align-items: center;
+  justify-content: space-between; /* Distribuye el espacio entre los elementos */
+  align-items: center; /* Centra verticalmente los elementos */
   margin: 10px 0;
+  gap: 10px; /* Espacio entre elementos */
+  width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+}
+
+.price-card .center-content,
+.customs-card .center-content,
+.taxes-card .center-content,
+.final-declaration-card .center-content {
+  display: flex;
+
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 
 .price-card hr,
 .customs-card hr,
 .taxes-card hr,
 .final-declaration-card hr {
-  border: 5px;
-  height: 2px;
+  border: none;
+  height: 3px;
   background: #000000;
   margin: 15px 0;
 }
@@ -153,7 +147,7 @@ body {
   text-align: right;
 }
 
-/*Resposive */
+/* Responsive */
 
 @media (max-width: 768px) {
   .grid-container {
@@ -178,8 +172,12 @@ body {
   .customs-card p,
   .taxes-card p,
   .final-declaration-card p {
-    flex-direction: column;
-    align-items: flex-start;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin: 10px 0;
+    gap: 10px;
+    width: 100%; /* Asegurar que ocupe todo el ancho disponible */
   }
 
   .price-card .ant-input-number,
@@ -189,37 +187,5 @@ body {
     width: 100%;
     margin-left: 0;
     margin-top: 5px;
-  }
-}
-/* Estilos para las filas dentro de las tarjetas */
-.card-row {
-  display: flex;
-  justify-content: center; /* Centrar horizontalmente */
-  align-items: center; /* Centrar verticalmente */
-  gap: 10px; /* Espacio entre elementos */
-  margin: 10px 0;
-}
-
-/* Estilos para los valores en DOP */
-.card-row .value {
-  text-align: center; /* Centrar el texto */
-  min-width: 120px; /* Ancho fijo para consistencia */
-}
-
-/* Estilos para los inputs */
-.card-row .ant-input-number {
-  width: 120px; /* Ancho fijo para los inputs */
-  text-align: center; /* Centrar el texto dentro del input */
-}
-
-/* Estilos para pantallas pequeñas */
-@media (max-width: 768px) {
-  .card-row {
-    flex-direction: column; /* Apilar verticalmente */
-    align-items: center; /* Centrar verticalmente */
-  }
-
-  .card-row .value {
-    margin-top: 5px; /* Espacio entre elementos apilados */
   }
 }
