@@ -33,26 +33,37 @@ const App: React.FC = () => {
 
   const fetchData = async () => {
     try {
-      const params = new URLSearchParams(
-        Object.entries(filters).filter(([_, value]) => value.trim() !== "")
-      );
-      const response = await fetch(`http://localhost:3000/vehicles?${params}`);
-      const result = await response.json();
-      if (result.success) {
-        setData(
-          result.data.map((item: any, index: number) => ({
-            key: index,
-            Marca: item.Marca,
-            Modelo: item.Modelo,
-            Año: item.Año,
-            Valor: parseFloat(item.Valor),
-            Pais: item.Pais,
-            Especificaciones: item.Especificaciones,
-          }))
-        );
-      } else {
-        console.error("Error: No se obtuvieron los vehículos.");
+      const response = await fetch("/vehicles.json"); // Ruta directa al archivo en la carpeta public
+
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
       }
+
+      const result = await response.json();
+
+      const filteredData = result.filter((item: any) => {
+        return (
+          (filters.marca
+            ? item.Marca.toLowerCase().includes(filters.marca.toLowerCase())
+            : true) &&
+          (filters.modelo
+            ? item.Modelo.toLowerCase().includes(filters.modelo.toLowerCase())
+            : true) &&
+          (filters.year ? item.Año.toString().includes(filters.year) : true)
+        );
+      });
+
+      setData(
+        filteredData.map((item: any, index: number) => ({
+          key: index,
+          Marca: item.Marca,
+          Modelo: item.Modelo,
+          Año: item.Año,
+          Valor: parseFloat(item.Valor),
+          Pais: item.Pais,
+          Especificaciones: item.Especificaciones,
+        }))
+      );
     } catch (error) {
       console.error("Error en la petición de vehículos:", error);
     }
@@ -295,13 +306,28 @@ const App: React.FC = () => {
 
               <div className="grid-container">
                 <Card className="price-card">
-                  <h4>Precios</h4>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <h3>Precios</h3>
+                    <div style={{ flex: 1, textAlign: "center" }}>
+                      <h4>DOP</h4>
+                    </div>
+                    <div style={{ textAlign: "right", paddingRight: "20px" }}>
+                      <h4>USD</h4>
+                    </div>
+                  </div>
+                  <hr></hr>
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Valor Declarado FOB:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
+                      {formatCurrency(vehicle.Valor * exchangeRate)}
                     </div>
                     <div className="grid-item">
                       <InputNumber
@@ -320,7 +346,7 @@ const App: React.FC = () => {
                       <b>Seguro:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}
+                      {formatCurrency(vehicle.Seguro * exchangeRate)}
                     </div>
                     <div className="grid-item">
                       <InputNumber
@@ -338,7 +364,7 @@ const App: React.FC = () => {
                       <b>Flete:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}
+                      {formatCurrency(vehicle.Flete * exchangeRate)}
                     </div>
                     <div className="grid-item">
                       <InputNumber
@@ -369,7 +395,6 @@ const App: React.FC = () => {
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -382,7 +407,23 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h4>Aduanas</h4>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <h3>Aduanas</h3>
+                    <div style={{ flex: 1, textAlign: "center" }}>
+                      <h4>DOP</h4>
+                    </div>
+                    <div style={{ textAlign: "right", paddingRight: "20px" }}>
+                      <h4>USD</h4>
+                    </div>
+                  </div>
+
+                  <hr></hr>
                   <div className="grid-card">
                     {/* Gravamen */}
                     <div className="grid-item">
@@ -395,20 +436,17 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Gravamen.replace(
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0) / exchangeRate,
-                        "USD"
+                        ) || 0) / exchangeRate
                       )}
                     </div>
 
@@ -423,12 +461,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).ITBIS.replace(
@@ -439,7 +475,6 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-
                     {/* Servicio Aduanero */}
                     <div className="grid-item">
                       <b>Servicio Aduanero:</b>
@@ -447,7 +482,6 @@ const App: React.FC = () => {
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
-                        addonBefore={"DOP"}
                         value={servicioAduaneroValue}
                         precision={2}
                         onChange={(newValue) =>
@@ -455,6 +489,13 @@ const App: React.FC = () => {
                         }
                         style={{ width: "130px" }}
                       />
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
+                      {" "}
+                      {formatCurrency(
+                        servicioAduaneroValue / exchangeRate,
+                        "USD"
+                      )}
                     </div>
                   </div>
                   <hr />
@@ -469,12 +510,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Total_regimen.replace(
@@ -489,7 +528,21 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h4>Otros Impuestos</h4>
+                  <h3>Otros Impuestos</h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ flex: 1, textAlign: "center" }}>
+                      <h4>DOP</h4>
+                    </div>
+                    <div style={{ textAlign: "right", paddingRight: "0px" }}>
+                      <h4>USD</h4>
+                    </div>
+                  </div>
                   <div className="grid-card">
                     {/* CO2 */}
                     <div className="grid-item">
@@ -499,12 +552,10 @@ const App: React.FC = () => {
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Co2.replace(/[^0-9.-]+/g, "")
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Co2.replace(/[^0-9.-]+/g, "")
@@ -512,7 +563,6 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-
                     {/* Placa */}
                     <div className="grid-item">
                       <b>Placa:</b>
@@ -524,12 +574,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Placa.replace(
@@ -540,23 +588,27 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-
                     {/* Marbete */}
                     <div className="grid-item">
                       <b>Marbete:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(marbeteValue, "DOP")}
+                      <div className="grid-item">
+                        <InputNumber
+                          className="right-align-input"
+                          value={marbeteValue}
+                          precision={2}
+                          onChange={(newValue) =>
+                            setMarbeteValue(newValue ?? 0)
+                          }
+                          style={{ width: "130px" }}
+                        />
+                      </div>
                     </div>
-                    <div className="grid-item">
-                      <InputNumber
-                        className="right-align-input"
-                        addonBefore={"DOP"}
-                        value={marbeteValue}
-                        precision={2}
-                        onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
-                        style={{ width: "130px" }}
-                      />
+
+                    <div className="grid-item left-align-currencyUSD">
+                      {" "}
+                      {formatCurrency(marbeteValue / exchangeRate, "USD")}
                     </div>
                   </div>
                   <hr />
@@ -571,12 +623,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).totalDgii.replace(
@@ -591,7 +641,21 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h4>Declaración Final</h4>
+                  <h3>Declaración Final</h3>
+                  <div
+                    style={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "center",
+                    }}
+                  >
+                    <div style={{ flex: 1, textAlign: "center" }}>
+                      <h4>DOP</h4>
+                    </div>
+                    <div style={{ textAlign: "right", paddingRight: "0px" }}>
+                      <h4>USD</h4>
+                    </div>
+                  </div>
                   <div className="grid-card">
                     {/* Total Aduanas */}
                     <div className="grid-item">
@@ -604,12 +668,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Total_regimen.replace(
@@ -632,12 +694,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).totalDgii.replace(
@@ -655,14 +715,12 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid-item center-currencyDOP">
                       {formatCurrency(
-                        (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate,
-                        "DOP"
+                        (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate
                       )}
                     </div>
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
-                        addonBefore={"US"}
                         value={vehicle.ValorVehiculo ?? vehicle.Valor}
                         precision={2}
                         onChange={(newValue) =>
@@ -690,12 +748,10 @@ const App: React.FC = () => {
                             /[^0-9.-]+/g,
                             ""
                           )
-                        ) || 0,
-                        "DOP"
+                        ) || 0
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      <b>US</b>
                       {formatCurrency(
                         (parseFloat(
                           calculateTaxes(vehicle).Total.replace(

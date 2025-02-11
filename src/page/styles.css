@@ -127,9 +127,9 @@ body {
 .customs-card h4,
 .taxes-card h4,
 .final-declaration-card h4 {
-  color: #444;
   text-align: center;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
+  font-weight: bold;
 }
 
 .price-card hr,
@@ -181,7 +181,7 @@ body {
 
 .grid-item {
   display: flex;
-  justify-content: center;
+  justify-content: right;
   align-items: center;
   text-align: center;
 }
