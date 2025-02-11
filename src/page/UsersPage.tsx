@@ -296,58 +296,69 @@ const App: React.FC = () => {
               <div className="grid-container">
                 <Card className="price-card">
                   <h4>Precios</h4>
-                  <p>
-                    <b>Valor Declarado FOB:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    <div className="grid-item">
+                      <b>Valor Declarado FOB:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(vehicle.Valor * exchangeRate, "DOP")}
-                    </span>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"US"}
-                      value={vehicle.Valor}
-                      precision={2}
-                      onChange={(newValue) =>
-                        updateFOB(vehicle.key, newValue ?? 0)
-                      }
-                      style={{ width: "120px" }}
-                    />
-                  </p>
-                  <p>
-                    <b>Seguro:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"US"}
+                        value={vehicle.Valor}
+                        precision={2}
+                        onChange={(newValue) =>
+                          updateFOB(vehicle.key, newValue ?? 0)
+                        }
+                        style={{ width: "120px" }}
+                      />
+                    </div>
+
+                    <div className="grid-item">
+                      <b>Seguro:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(vehicle.Seguro * exchangeRate, "DOP")}
-                    </span>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"US"}
-                      value={vehicle.Seguro}
-                      precision={2}
-                      onChange={(newValue) =>
-                        updateSeguro(vehicle.key, newValue ?? 0)
-                      }
-                      style={{ width: "120px" }}
-                    />
-                  </p>
-                  <p>
-                    <b>Flete:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"US"}
+                        value={vehicle.Seguro}
+                        precision={2}
+                        onChange={(newValue) =>
+                          updateSeguro(vehicle.key, newValue ?? 0)
+                        }
+                        style={{ width: "120px" }}
+                      />
+                    </div>
+                    <div className="grid-item">
+                      <b>Flete:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(vehicle.Flete * exchangeRate, "DOP")}
-                    </span>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"US"}
-                      value={vehicle.Flete}
-                      precision={2}
-                      onChange={(newValue) =>
-                        updateFlete(vehicle.key, newValue ?? 0)
-                      }
-                      style={{ width: "120px" }}
-                    />
-                  </p>
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"US"}
+                        value={vehicle.Flete}
+                        precision={2}
+                        onChange={(newValue) =>
+                          updateFlete(vehicle.key, newValue ?? 0)
+                        }
+                        style={{ width: "120px" }}
+                      />
+                    </div>
+                  </div>
                   <hr />
-                  <p>
-                    <b>Total CIF:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    <div className="grid-item">
+                      <b>Total CIF:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         ((vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
@@ -356,8 +367,8 @@ const App: React.FC = () => {
                           exchangeRate,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (vehicle.Valor || 0) +
@@ -366,15 +377,18 @@ const App: React.FC = () => {
                           350,
                         "USD"
                       )}
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 </Card>
 
-                <Card className="customs-card">
+                <Card className="price-card">
                   <h4>Aduanas</h4>
-                  <p>
-                    <b>Gravamen:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    {/* Gravamen */}
+                    <div className="grid-item">
+                      <b>Gravamen:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Gravamen.replace(
@@ -384,8 +398,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -396,11 +410,13 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>ITBIS:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+
+                    {/* ITBIS */}
+                    <div className="grid-item">
+                      <b>ITBIS:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).ITBIS.replace(
@@ -410,8 +426,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -422,25 +438,31 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>Servicio Aduanero:</b>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"DOP"}
-                      value={servicioAduaneroValue}
-                      precision={2}
-                      onChange={(newValue) =>
-                        setServicioAduaneroValue(newValue ?? 0)
-                      }
-                      style={{ width: "130px" }}
-                    />
-                  </p>
+                    </div>
+
+                    {/* Servicio Aduanero */}
+                    <div className="grid-item">
+                      <b>Servicio Aduanero:</b>
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"DOP"}
+                        value={servicioAduaneroValue}
+                        precision={2}
+                        onChange={(newValue) =>
+                          setServicioAduaneroValue(newValue ?? 0)
+                        }
+                        style={{ width: "130px" }}
+                      />
+                    </div>
+                  </div>
                   <hr />
-                  <p>
-                    <b>Total Aduanas:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    <div className="grid-item">
+                      <b>Total Aduanas:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Total_regimen.replace(
@@ -450,8 +472,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -462,23 +484,26 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 </Card>
 
-                <Card className="taxes-card">
+                <Card className="price-card">
                   <h4>Otros Impuestos</h4>
-                  <p>
-                    <b>CO2:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    {/* CO2 */}
+                    <div className="grid-item">
+                      <b>CO2:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Co2.replace(/[^0-9.-]+/g, "")
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -486,11 +511,13 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>Placa:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+
+                    {/* Placa */}
+                    <div className="grid-item">
+                      <b>Placa:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Placa.replace(
@@ -500,8 +527,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -512,26 +539,32 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>Marbete:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+
+                    {/* Marbete */}
+                    <div className="grid-item">
+                      <b>Marbete:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(marbeteValue, "DOP")}
-                    </span>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"DOP"}
-                      value={marbeteValue}
-                      precision={2}
-                      onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
-                      style={{ width: "130px" }}
-                    />
-                  </p>
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"DOP"}
+                        value={marbeteValue}
+                        precision={2}
+                        onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
+                        style={{ width: "130px" }}
+                      />
+                    </div>
+                  </div>
                   <hr />
-                  <p>
-                    <b>Total DGII:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    <div className="grid-item">
+                      <b>Total DGII:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).totalDgii.replace(
@@ -541,8 +574,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -553,15 +586,18 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 </Card>
 
-                <Card className="final-declaration-card">
+                <Card className="price-card">
                   <h4>Declaración Final</h4>
-                  <p>
-                    <b>Total Aduanas:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    {/* Total Aduanas */}
+                    <div className="grid-item">
+                      <b>Total Aduanas:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Total_regimen.replace(
@@ -571,8 +607,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -583,11 +619,13 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>Total DGII:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+
+                    {/* Total DGII */}
+                    <div className="grid-item">
+                      <b>Total DGII:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).totalDgii.replace(
@@ -597,8 +635,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -609,37 +647,43 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
-                  <p>
-                    <b>Valor Vehículo:</b>
-                    <span className="center-currencyDOP">
+                    </div>
+
+                    {/* Valor Vehículo */}
+                    <div className="grid-item">
+                      <b>Valor Vehículo:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate,
                         "DOP"
                       )}
-                    </span>
-                    <InputNumber
-                      className="right-align-input"
-                      addonBefore={"US"}
-                      value={vehicle.ValorVehiculo ?? vehicle.Valor}
-                      precision={2}
-                      onChange={(newValue) =>
-                        setSelectedVehicles((prevVehicles) =>
-                          prevVehicles.map((v) =>
-                            v.key === vehicle.key
-                              ? { ...v, ValorVehiculo: newValue ?? 0 }
-                              : v
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        addonBefore={"US"}
+                        value={vehicle.ValorVehiculo ?? vehicle.Valor}
+                        precision={2}
+                        onChange={(newValue) =>
+                          setSelectedVehicles((prevVehicles) =>
+                            prevVehicles.map((v) =>
+                              v.key === vehicle.key
+                                ? { ...v, ValorVehiculo: newValue ?? 0 }
+                                : v
+                            )
                           )
-                        )
-                      }
-                      style={{ width: "120px" }}
-                    />
-                  </p>
+                        }
+                        style={{ width: "120px" }}
+                      />
+                    </div>
+                  </div>
                   <hr />
-                  <p>
-                    <b>Total + Impuestos:</b>
-                    <span className="center-currencyDOP">
+                  <div className="grid-card">
+                    <div className="grid-item">
+                      <b>Total + Impuestos:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
                       {formatCurrency(
                         parseFloat(
                           calculateTaxes(vehicle).Total.replace(
@@ -649,8 +693,8 @@ const App: React.FC = () => {
                         ) || 0,
                         "DOP"
                       )}
-                    </span>
-                    <span className="left-align-currencyUSD">
+                    </div>
+                    <div className="grid-item left-align-currencyUSD">
                       <b>US</b>
                       {formatCurrency(
                         (parseFloat(
@@ -661,8 +705,8 @@ const App: React.FC = () => {
                         ) || 0) / exchangeRate,
                         "USD"
                       )}
-                    </span>
-                  </p>
+                    </div>
+                  </div>
                 </Card>
               </div>
             </div>

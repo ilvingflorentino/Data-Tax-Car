@@ -18,16 +18,18 @@ body {
   gap: 10px;
   margin-bottom: 16px;
 }
-.rate-buttons {
-  display: flex;
-  gap: 10px;
-  justify-content: center;
-  margin-top: 10px;
+
+.filters .ant-input {
+  flex: 1;
 }
 
 .results-card {
   margin-top: 16px;
-  padding: 10px;
+  padding: 20px;
+}
+
+.vehicle-card {
+  margin-bottom: 30px;
 }
 
 .vehicle-title {
@@ -46,44 +48,69 @@ body {
   color: #000;
 }
 
-/* envolver todo en el mismo Div Center */
+.rate-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
 
+/* Grid para tarjetas */
 .grid-container {
   display: grid;
   grid-template-columns: 1fr 1fr; /* Dos columnas */
   grid-template-rows: 1fr 1fr; /* Dos filas */
-  gap: 20px; /* Espacio entre tarjetas (simula la cruz blanca) */
+  gap: 20px;
 }
 
-.center-currencyDOP {
-  flex: 3;
+/* Estructura de columnas dentro de las tarjetas */
+.card-content {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr; /* Títulos, RD$, US$ */
+  gap: 10px;
+  align-items: center;
+}
+
+.card-content p {
+  display: contents;
+}
+
+.card-content b {
+  grid-column: 1;
+  text-align: left;
+}
+
+.card-content .rd-value {
+  grid-column: 2;
   text-align: center;
   font-weight: bold;
   color: #333;
-  margin: 0 auto;
 }
 
-.left-align-currencyUSD {
-  font-weight: normal;
-  color: #000000;
+.card-content .usd-value {
+  grid-column: 3;
+  text-align: right;
+  color: #000;
 }
 
+/* Estilo para inputs */
 .right-align-input .ant-input-number-input {
-  text-align: right; /* Alinea el texto dentro del input a la derecha */
+  text-align: right;
 }
 
 .right-align-input .ant-input-number {
-  width: 120px; /* Ancho fijo para consistencia */
-  margin-left: auto; /* Alinea el input a la derecha */
+  width: 120px;
+  margin-left: auto;
 }
 
+/* Estilo general de las tarjetas */
 .price-card,
 .customs-card,
 .taxes-card,
 .final-declaration-card {
   background-color: #fff;
   border-radius: 8px;
-  box-shadow: 0 4px 7px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   padding: 20px;
   transition: transform 1.2s, box-shadow 0.2s;
 }
@@ -92,7 +119,7 @@ body {
 .customs-card:hover,
 .taxes-card:hover,
 .final-declaration-card:hover {
-  transform: translateY(-20px);
+  transform: translateY(-10px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
@@ -105,50 +132,17 @@ body {
   margin-bottom: 30px;
 }
 
-.price-card p,
-.customs-card p,
-.taxes-card p,
-.final-declaration-card p {
-  display: flex;
-  justify-content: space-between; /* Distribuye el espacio entre los elementos */
-  align-items: center; /* Centra verticalmente los elementos */
-  margin: 10px 0;
-  gap: 10px; /* Espacio entre elementos */
-  width: 100%; /* Asegurar que ocupe todo el ancho disponible */
-}
-
-.price-card .center-content,
-.customs-card .center-content,
-.taxes-card .center-content,
-.final-declaration-card .center-content {
-  display: flex;
-
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-
 .price-card hr,
 .customs-card hr,
 .taxes-card hr,
 .final-declaration-card hr {
   border: none;
-  height: 3px;
+  height: 2px;
   background: #000000;
   margin: 15px 0;
 }
 
-.price-card .total,
-.customs-card .total,
-.taxes-card .total,
-.final-declaration-card .total {
-  font-weight: bold;
-  margin-top: 10px;
-  text-align: right;
-}
-
 /* Responsive */
-
 @media (max-width: 768px) {
   .grid-container {
     grid-template-columns: 1fr;
@@ -168,24 +162,41 @@ body {
     font-size: 1.1em;
   }
 
-  .price-card p,
-  .customs-card p,
-  .taxes-card p,
-  .final-declaration-card p {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin: 10px 0;
-    gap: 10px;
-    width: 100%; /* Asegurar que ocupe todo el ancho disponible */
+  .card-content {
+    grid-template-columns: 1fr 1fr;
   }
 
-  .price-card .ant-input-number,
-  .customs-card .ant-input-number,
-  .taxes-card .ant-input-number,
-  .final-declaration-card .ant-input-number {
-    width: 100%;
-    margin-left: 0;
-    margin-top: 5px;
+  .card-content .usd-value {
+    text-align: left;
   }
+}
+
+/* Estilo adicional para alinear columnas */
+.grid-card {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  align-items: center;
+}
+
+.grid-item {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+.grid-item b {
+  text-align: left;
+}
+
+.center-currencyDOP {
+  text-align: center;
+  font-weight: bold;
+  color: #333;
+}
+
+.left-align-currencyUSD {
+  text-align: right;
+  color: #000;
 }
