@@ -148,15 +148,18 @@ const App: React.FC = () => {
     const totalDgiiDOP = totalDgiiUSD * exchangeRate + marbeteValue; // Convertimos CO2 y Placa a DOP y sumamos marbete
 
     // Total Aduanas (DOP) - Convertimos todo a DOP
-    const total_regimenDOP =
+    const totalAduanasDOP =
       (gravamen + itbis) * exchangeRate + servicioAduaneroValue;
 
     // Valor Vehículo en DOP
-    const valorVehiculoDOP =
-      (vehicle.ValorVehiculo ?? vehicle.Valor) * exchangeRate;
+    const valorVehiculoDOP = (vehicle.ValorVehiculo ?? 0) * exchangeRate;
+
+    // Total CIF en DOP
+    const totalCIFDOP = cif_total * exchangeRate;
 
     // Total Final (DOP)
-    const TotalDOP = total_regimenDOP + totalDgiiDOP + valorVehiculoDOP;
+    const TotalDOP =
+      totalCIFDOP + totalAduanasDOP + totalDgiiDOP + valorVehiculoDOP;
 
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
@@ -166,7 +169,7 @@ const App: React.FC = () => {
       Otros: formatCurrency(otros * exchangeRate, "DOP"),
       Gravamen: formatCurrency(gravamen * exchangeRate, "DOP"),
       ITBIS: formatCurrency(itbis * exchangeRate, "DOP"),
-      Total_regimen: formatCurrency(total_regimenDOP, "DOP"),
+      Total_regimen: formatCurrency(totalAduanasDOP, "DOP"),
       Co2: formatCurrency(co2 * exchangeRate, "DOP"),
       Placa: formatCurrency(placa * exchangeRate, "DOP"),
       totalDgii: formatCurrency(totalDgiiDOP, "DOP"),
@@ -720,7 +723,6 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid-item">
                       <InputNumber
-                        className="right-align-input"
                         value={vehicle.ValorVehiculo ?? vehicle.Valor}
                         precision={2}
                         onChange={(newValue) =>
