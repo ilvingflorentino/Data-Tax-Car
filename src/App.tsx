@@ -1,5 +1,5 @@
 import UsersPage from "./page/UsersPage";
-import VisitCounter from "./page/Visitas";
+import VisitCounter from "./Components/VisitCounter";
 export default function App() {
   return (
     <div style={{ padding: "9px" }}>

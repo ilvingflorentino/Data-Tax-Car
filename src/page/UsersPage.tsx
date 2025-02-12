@@ -22,7 +22,7 @@ const App: React.FC = () => {
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
   const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
-  const [isUSD, setIsUSD] = useState(true); // Controla si mostrar en USD o DOP
+  //const [isUSD] = useState(true); // Solo lectura, no cambiará nunca
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
   const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Valor fijo en RD$`
