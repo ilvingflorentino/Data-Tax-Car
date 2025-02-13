@@ -2,7 +2,10 @@ import React, { useState, useEffect, ReactNode } from "react";
 import { Button, Input, Table, Card, InputNumber, Select } from "antd";
 import type { TableColumnsType } from "antd";
 import "./styles.css";
+import ExchangeRate from "../Components/ExchangeRate";
+import { updateExchangeRate } from "../Services/updateExchangerRate";
 interface DataType {
+  Otros: number;
   ValorVehiculo: number;
   Flete: number;
   Seguro: number;
@@ -22,12 +25,12 @@ const App: React.FC = () => {
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
   const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
-  //const [isUSD] = useState(true); // Solo lectura, no cambiará nunca
   const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
   const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
   const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Valor fijo en RD$`
   const [servicioAduaneroValue, setServicioAduaneroValue] =
     useState<number>(8756.31); // Servicio Aduanero editable
+  const [otros, setOtros] = useState(350);
 
   const fetchData = async () => {
     try {
@@ -123,25 +126,40 @@ const App: React.FC = () => {
       );
     });
   };
+
+  useEffect(() => {
+    const fetchAndUpdateRate = async () => {
+      const newRate = await updateExchangeRate();
+      if (newRate) {
+        setExchangeRate(newRate);
+      }
+    };
+
+    fetchAndUpdateRate();
+  }, []);
+
   const calculateTaxes = (vehicle: DataType) => {
     const fob = vehicle.Valor; // USD
     const seguro = vehicle.Seguro ?? fob * 0.02; // USD
     const flete = vehicle.Flete ?? 800; // USD
-    const otros = 350.0; // USD
-    const cif_total = fob + seguro + flete + otros; // USD
+    const totalCIF =
+      (vehicle.Valor || 0) +
+      (vehicle.Seguro ?? vehicle.Valor * 0.02) +
+      (vehicle.Flete ?? 800) +
+      otros; // "Otros" ya está en USD, se suma directo
 
     // Gravamen dinámico (USD)
     const gravamen =
       vehicle.Pais.toUpperCase() === "ESTADOS UNIDOS"
         ? 0
-        : cif_total * gravamenRate;
+        : totalCIF * gravamenRate;
 
     // ITBIS (USD)
-    const itbis = (cif_total + gravamen) * 0.18;
+    const itbis = (totalCIF + gravamen) * 0.18;
 
     // CO2 y Placa (USD)
-    const co2 = cif_total * co2Rate;
-    const placa = cif_total * 0.17;
+    const co2 = totalCIF * co2Rate;
+    const placa = totalCIF * 0.17;
 
     // Total DGII (DOP) - Marbete ya está en DOP
     const totalDgiiUSD = co2 + placa; // USD
@@ -155,7 +173,7 @@ const App: React.FC = () => {
     const valorVehiculoDOP = (vehicle.ValorVehiculo ?? 0) * exchangeRate;
 
     // Total CIF en DOP
-    const totalCIFDOP = cif_total * exchangeRate;
+    const totalCIFDOP = totalCIF * exchangeRate;
 
     // Total Final (DOP)
     const TotalDOP =
@@ -163,7 +181,7 @@ const App: React.FC = () => {
 
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
-      CIF: formatCurrency(cif_total * exchangeRate, "DOP"),
+      CIF: formatCurrency(totalCIF * exchangeRate, "DOP"),
       Seguro: formatCurrency(seguro * exchangeRate, "DOP"),
       Flete: formatCurrency(flete * exchangeRate, "DOP"),
       Otros: formatCurrency(otros * exchangeRate, "DOP"),
@@ -211,10 +229,6 @@ const App: React.FC = () => {
       key: "Especificaciones",
     },
   ];
-
-  //cuando se modifique el fob debe actulizar valor vehicuolo.
-
-  //total CIF, alinados con datos.
 
   return (
     <div className="container">
@@ -275,6 +289,11 @@ const App: React.FC = () => {
               </h2>
               <div className="rate-section">
                 <h3>Tasa</h3>
+                <ExchangeRate
+                  exchangeRate={exchangeRate || 0}
+                  setExchangeRate={setExchangeRate}
+                />
+
                 <div>
                   RD${" "}
                   <InputNumber
@@ -284,15 +303,15 @@ const App: React.FC = () => {
                 </div>
                 <div className="rate-buttons">
                   <Button type="primary" onClick={refe}>
-                    Valores Por Defecto
+                    Empezar de Nuevo
                   </Button>
                   <Select
                     defaultValue="0.10"
                     onChange={(value) => setGravamenRate(parseFloat(value))}
                   >
+                    <Select.Option value="0.0">Gravamen 0%</Select.Option>
                     <Select.Option value="0.10">Gravamen 10%</Select.Option>
                     <Select.Option value="0.20">Gravamen 20%</Select.Option>
-                    <Select.Option value="0.30">Gravamen 30%</Select.Option>
                   </Select>
                   <Select
                     defaultValue="0.01"
@@ -314,7 +333,7 @@ const App: React.FC = () => {
                       alignItems: "center",
                     }}
                   >
-                    <h3>Precios</h3>
+                    <h3>Valor del Vehículo</h3>
                     <div style={{ flex: 1, textAlign: "center" }}>
                       <h4>DOP</h4>
                     </div>
@@ -322,8 +341,10 @@ const App: React.FC = () => {
                       <h4>USD</h4>
                     </div>
                   </div>
-                  <hr></hr>
+                  <hr />
+
                   <div className="grid-card">
+                    {/* Valor FOB */}
                     <div className="grid-item">
                       <b>Valor Declarado FOB:</b>
                     </div>
@@ -333,7 +354,6 @@ const App: React.FC = () => {
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
-                        addonBefore={"US"}
                         value={vehicle.Valor}
                         precision={2}
                         onChange={(newValue) =>
@@ -343,6 +363,7 @@ const App: React.FC = () => {
                       />
                     </div>
 
+                    {/* Seguro */}
                     <div className="grid-item">
                       <b>Seguro:</b>
                     </div>
@@ -352,7 +373,6 @@ const App: React.FC = () => {
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
-                        addonBefore={"US"}
                         value={vehicle.Seguro}
                         precision={2}
                         onChange={(newValue) =>
@@ -361,6 +381,8 @@ const App: React.FC = () => {
                         style={{ width: "120px" }}
                       />
                     </div>
+
+                    {/* Flete */}
                     <div className="grid-item">
                       <b>Flete:</b>
                     </div>
@@ -370,7 +392,6 @@ const App: React.FC = () => {
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
-                        addonBefore={"US"}
                         value={vehicle.Flete}
                         precision={2}
                         onChange={(newValue) =>
@@ -379,8 +400,27 @@ const App: React.FC = () => {
                         style={{ width: "120px" }}
                       />
                     </div>
+
+                    {/* Otros (Nuevo campo agregado correctamente) */}
+                    <div className="grid-item">
+                      <b>Otros:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
+                      {formatCurrency(otros * exchangeRate)}
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        value={otros}
+                        precision={2}
+                        onChange={(newValue) => setOtros(newValue ?? 0)}
+                        style={{ width: "120px" }}
+                      />
+                    </div>
                   </div>
+
                   <hr />
+                  {/* Total CIF (Incluyendo Otros en la suma correctamente) */}
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Total CIF:</b>
@@ -390,9 +430,8 @@ const App: React.FC = () => {
                         ((vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
                           (vehicle.Flete ?? 800) +
-                          350) *
-                          exchangeRate,
-                        "DOP"
+                          (otros ?? 350)) *
+                          exchangeRate
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
@@ -400,7 +439,7 @@ const App: React.FC = () => {
                         (vehicle.Valor || 0) +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
                           (vehicle.Flete ?? 800) +
-                          350,
+                          (otros ?? 350), // 🔹 Se corrigió aquí
                         "USD"
                       )}
                     </div>
@@ -423,8 +462,8 @@ const App: React.FC = () => {
                       <h4>USD</h4>
                     </div>
                   </div>
+                  <hr />
 
-                  <hr></hr>
                   <div className="grid-card">
                     {/* Gravamen */}
                     <div className="grid-item">
@@ -529,8 +568,7 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h3>Otros Impuestos</h3>
-                  <hr></hr>
+                  <h3>Impuestos DGII</h3>
                   <div
                     style={{
                       display: "flex",
@@ -545,6 +583,8 @@ const App: React.FC = () => {
                       <h4>USD</h4>
                     </div>
                   </div>
+                  <hr />
+
                   <div className="grid-card">
                     {/* CO2 */}
                     <div className="grid-item">
@@ -643,8 +683,7 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h3>Declaración Final</h3>
-                  <hr></hr>
+                  <h3>Costo Dinal del Vehículo</h3>
                   <div
                     style={{
                       display: "flex",
@@ -659,6 +698,8 @@ const App: React.FC = () => {
                       <h4>USD</h4>
                     </div>
                   </div>
+                  <hr />
+
                   <div className="grid-card">
                     {/* Total Aduanas */}
                     <div className="grid-item">
@@ -711,10 +752,12 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-
-                    {/* Valor Vehículo */}
+                  </div>
+                  {/* Valor Vehículo */}
+                  <div className="grid-card">
+                    {/* 🔹 Valor del Vehículo (Inicialmente es el Total CIF) */}
                     <div className="grid-item">
-                      <b>Valor Vehículo:</b>
+                      <b>Valor del Vehículo:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
                       {formatCurrency(
@@ -723,6 +766,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid-item">
                       <InputNumber
+                        className="right-align-input"
                         value={vehicle.ValorVehiculo ?? vehicle.Valor}
                         precision={2}
                         onChange={(newValue) =>
@@ -738,7 +782,9 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
+
                   <hr />
+
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Total + Impuestos:</b>

@@ -1,8 +1,8 @@
-/* Estilos generales */
+/* Estilos generales (para PC y móviles) */
 body {
   font-family: Arial, sans-serif;
   margin: 20px;
-  padding: auto;
+  padding: 0;
   background-color: #c7c7c7;
   color: #333;
 }
@@ -55,18 +55,17 @@ body {
   margin-top: 10px;
 }
 
-/* Grid para tarjetas */
+/* Grid para tarjetas (PC) */
 .grid-container {
   display: grid;
-  grid-template-columns: 1fr 1fr; /* Dos columnas */
-  grid-template-rows: 1fr 1fr; /* Dos filas */
+  grid-template-columns: 1fr 1fr; /* Dos columnas en PC */
   gap: 20px;
 }
 
-/* Estructura de columnas dentro de las tarjetas */
+/* Estructura de columnas dentro de las tarjetas (PC) */
 .card-content {
   display: grid;
-  grid-template-columns: 1fr 1fr 1fr; /* Títulos, RD$, US$ */
+  grid-template-columns: 1fr 1fr 1fr; /* Títulos, RD$, US$ en PC */
   gap: 10px;
   align-items: center;
 }
@@ -93,7 +92,7 @@ body {
   color: #000;
 }
 
-/* Estilo para inputs */
+/* Estilo para inputs (PC) */
 .right-align-input .ant-input-number-input {
   text-align: right;
 }
@@ -103,7 +102,7 @@ body {
   margin-left: auto;
 }
 
-/* Estilo general de las tarjetas */
+/* Estilo general de las tarjetas (PC) */
 .price-card,
 .customs-card,
 .taxes-card,
@@ -142,36 +141,7 @@ body {
   margin: 15px 0;
 }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .grid-container {
-    grid-template-columns: 1fr;
-  }
-
-  .price-card,
-  .customs-card,
-  .taxes-card,
-  .final-declaration-card {
-    padding: 15px;
-  }
-
-  .price-card h4,
-  .customs-card h4,
-  .taxes-card h4,
-  .final-declaration-card h4 {
-    font-size: 1.1em;
-  }
-
-  .card-content {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .card-content .usd-value {
-    text-align: left;
-  }
-}
-
-/* Estilo adicional para alinear columnas */
+/* Estilo adicional para alinear columnas (PC) */
 .grid-card {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
@@ -199,4 +169,141 @@ body {
 .left-align-currencyUSD {
   text-align: right;
   color: #000;
+}
+
+/* Responsive para móviles */
+@media (max-width: 768px) {
+  body {
+    margin: 10px;
+  }
+
+  .container {
+    padding: 10px;
+  }
+
+  .filters {
+    flex-direction: column; /* Cambiar a columna en móviles */
+  }
+
+  .filters .ant-input {
+    width: 100%; /* Ocupar todo el ancho en móviles */
+  }
+
+  .results-card {
+    padding: 10px;
+  }
+
+  .vehicle-card {
+    margin-bottom: 20px;
+  }
+
+  .rate-buttons {
+    flex-direction: column; /* Cambiar a columna en móviles */
+    align-items: center;
+  }
+
+  .grid-container {
+    grid-template-columns: 1fr; /* Una columna en móviles */
+  }
+
+  .card-content {
+    grid-template-columns: 1fr; /* Una columna en móviles */
+  }
+
+  .card-content p {
+    display: block; /* Cambiar a bloque en móviles */
+  }
+
+  .card-content .usd-value {
+    text-align: left; /* Alinear a la izquierda en móviles */
+  }
+
+  .right-align-input .ant-input-number {
+    width: 100%; /* Ocupar todo el ancho en móviles */
+    margin-left: 0;
+  }
+
+  .price-card,
+  .customs-card,
+  .taxes-card,
+  .final-declaration-card {
+    padding: 15px;
+  }
+
+  .price-card h4,
+  .customs-card h4,
+  .taxes-card h4,
+  .final-declaration-card h4 {
+    font-size: 1.1em;
+  }
+
+  .grid-card {
+    grid-template-columns: 1fr; /* Una columna en móviles */
+  }
+
+  .grid-item {
+    justify-content: center; /* Centrar en móviles */
+  }
+
+  .left-align-currencyUSD {
+    text-align: left; /* Alinear a la izquierda en móviles */
+  }
+}
+
+/* Responsive para pantallas muy pequeñas (menos de 480px) */
+@media (max-width: 480px) {
+  body {
+    margin: 5px;
+  }
+
+  .container {
+    padding: 5px;
+  }
+
+  .filters {
+    gap: 5px;
+  }
+
+  .results-card {
+    padding: 5px;
+  }
+
+  .vehicle-card {
+    margin-bottom: 15px;
+  }
+
+  .rate-buttons {
+    gap: 5px;
+  }
+
+  .grid-container {
+    gap: 10px;
+  }
+
+  .card-content {
+    gap: 5px;
+  }
+
+  .price-card,
+  .customs-card,
+  .taxes-card,
+  .final-declaration-card {
+    padding: 10px;
+  }
+
+  .price-card h4,
+  .customs-card h4,
+  .taxes-card h4,
+  .final-declaration-card h4 {
+    font-size: 1em;
+  }
+
+  .grid-item b {
+    font-size: 0.9em; /* Reducir el tamaño de la fuente en pantallas muy pequeñas */
+  }
+
+  .center-currencyDOP,
+  .left-align-currencyUSD {
+    font-size: 0.9em; /* Reducir el tamaño de la fuente en pantallas muy pequeñas */
+  }
 }
