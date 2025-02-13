@@ -9,7 +9,7 @@ body {
 
 .container {
   padding: 16px;
-  background: #85858e;
+  background: #fdfdfd;
   border-radius: 10px;
 }
 
@@ -163,7 +163,7 @@ body {
 .center-currencyDOP {
   text-align: center;
   font-weight: bold;
-  color: #333;
+  color: #000000;
 }
 
 .left-align-currencyUSD {
@@ -305,5 +305,21 @@ body {
   .center-currencyDOP,
   .left-align-currencyUSD {
     font-size: 0.9em; /* Reducir el tamaño de la fuente en pantallas muy pequeñas */
+  }
+
+  /* Opción 1: Ocultar elementos no esenciales */
+  .hide-on-mobile {
+    display: none; /* Oculta elementos en pantallas pequeñas */
+  }
+
+  /* Opción 2: Scroll horizontal */
+  .scrollable-container {
+    overflow-x: auto; /* Permite scroll horizontal */
+    white-space: nowrap; /* Evita saltos de línea */
+  }
+
+  .scrollable-container .grid-card {
+    display: inline-block; /* Permite que las tarjetas se alineen horizontalmente */
+    width: auto; /* Ajusta el ancho automáticamente */
   }
 }

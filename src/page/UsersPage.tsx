@@ -24,13 +24,39 @@ const App: React.FC = () => {
   const [selectedRowKeys, setSelectedRowKeys] = useState<React.Key[]>([]);
   const [selectedVehicles, setSelectedVehicles] = useState<DataType[]>([]);
   const [filters, setFilters] = useState({ marca: "", modelo: "", year: "" });
-  const [exchangeRate, setExchangeRate] = useState<number>(59.54); // Tasa de cambio inicial
-  const [gravamenRate, setGravamenRate] = useState<number>(0.1); // Gravamen inicial
-  const [co2Rate, setCo2Rate] = useState<number>(0.01); // CO2 inicial
-  const [marbeteValue, setMarbeteValue] = useState<number>(3000); // Valor fijo en RD$`
+  const [exchangeRate, setExchangeRate] = useState<number>(59.54);
+  const [gravamenRate, setGravamenRate] = useState<number>(0.1);
+  const [co2Rate, setCo2Rate] = useState<number>(0.01);
+  const [marbeteValue, setMarbeteValue] = useState<number>(3000);
   const [servicioAduaneroValue, setServicioAduaneroValue] =
-    useState<number>(8756.31); // Servicio Aduanero editable
-  const [otros, setOtros] = useState(350);
+    useState<number>(8756.31);
+  const [otros, setOtros] = useState<number>(0);
+  const [seguroFleteOtros, setSeguroFleteOtros] = useState<number | null>(null);
+
+  const resetFields = () => {
+    // Restablecer el valor de Seguro + Flete + Otros
+    setSeguroFleteOtros(null);
+
+    // Restablecer el valor del Marbete
+    setMarbeteValue(3000); // Valor predeterminado del Marbete
+
+    // Restablecer el valor del Servicio Aduanero
+    setServicioAduaneroValue(8756.31); // Valor predeterminado del Servicio Aduanero
+
+    // Restablecer el valor de "Otros"
+    setOtros(0); // Valor predeterminado de Otros
+
+    // Restablecer los valores del vehículo (FOB, Seguro, Flete, Valor del Vehículo)
+    setSelectedVehicles((prevVehicles) =>
+      prevVehicles.map((vehicle) => ({
+        ...vehicle,
+        Valor: vehicle.Valor, // Restablecer FOB al valor original
+        Seguro: vehicle.Valor * 0.02, // Restablecer Seguro (2% del FOB)
+        Flete: 800, // Restablecer Flete (valor fijo)
+        ValorVehiculo: vehicle.Valor, // Restablecer Valor del Vehículo al valor original
+      }))
+    );
+  };
 
   const fetchData = async () => {
     try {
@@ -137,16 +163,17 @@ const App: React.FC = () => {
 
     fetchAndUpdateRate();
   }, []);
-
   const calculateTaxes = (vehicle: DataType) => {
     const fob = vehicle.Valor; // USD
-    const seguro = vehicle.Seguro ?? fob * 0.02; // USD
-    const flete = vehicle.Flete ?? 800; // USD
-    const totalCIF =
-      (vehicle.Valor || 0) +
-      (vehicle.Seguro ?? vehicle.Valor * 0.02) +
-      (vehicle.Flete ?? 800) +
-      otros; // "Otros" ya está en USD, se suma directo
+
+    // Usar el valor de seguroFleteOtros si está definido, de lo contrario calcularlo automáticamente
+    const seguroFleteOtrosValue =
+      seguroFleteOtros !== null
+        ? seguroFleteOtros
+        : (vehicle.Seguro ?? fob * 0.02) + (vehicle.Flete ?? 800) + otros;
+
+    // Calcular el Total CIF
+    const totalCIF = fob + seguroFleteOtrosValue; // USD
 
     // Gravamen dinámico (USD)
     const gravamen =
@@ -182,8 +209,11 @@ const App: React.FC = () => {
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
       CIF: formatCurrency(totalCIF * exchangeRate, "DOP"),
-      Seguro: formatCurrency(seguro * exchangeRate, "DOP"),
-      Flete: formatCurrency(flete * exchangeRate, "DOP"),
+      Seguro: formatCurrency(
+        vehicle.Seguro ?? fob * 0.02 * exchangeRate,
+        "DOP"
+      ),
+      Flete: formatCurrency(vehicle.Flete ?? 800 * exchangeRate, "DOP"),
       Otros: formatCurrency(otros * exchangeRate, "DOP"),
       Gravamen: formatCurrency(gravamen * exchangeRate, "DOP"),
       ITBIS: formatCurrency(itbis * exchangeRate, "DOP"),
@@ -196,7 +226,6 @@ const App: React.FC = () => {
       Total: formatCurrency(TotalDOP, "DOP"),
     };
   };
-
   const columns: TableColumnsType<DataType> = [
     {
       title: "Marca",
@@ -255,29 +284,31 @@ const App: React.FC = () => {
           }
         />
       </div>
-      <Table
-        rowSelection={{
-          selectedRowKeys,
-          onChange: (newSelectedRowKeys) => {
-            if (
-              selectedRowKeys.length > 0 &&
-              newSelectedRowKeys[0] === selectedRowKeys[0]
-            ) {
-              setSelectedRowKeys([]);
-              setSelectedVehicles([]);
-            } else {
-              setSelectedRowKeys(newSelectedRowKeys);
-              const selected = data.filter((item) =>
-                newSelectedRowKeys.includes(item.key)
-              );
-              setSelectedVehicles(selected);
-            }
-          },
-          type: "checkbox",
-        }}
-        columns={columns}
-        dataSource={data}
-      />
+      <div className="scrollable-container">
+        <Table
+          rowSelection={{
+            selectedRowKeys,
+            onChange: (newSelectedRowKeys) => {
+              if (
+                selectedRowKeys.length > 0 &&
+                newSelectedRowKeys[0] === selectedRowKeys[0]
+              ) {
+                setSelectedRowKeys([]);
+                setSelectedVehicles([]);
+              } else {
+                setSelectedRowKeys(newSelectedRowKeys);
+                const selected = data.filter((item) =>
+                  newSelectedRowKeys.includes(item.key)
+                );
+                setSelectedVehicles(selected);
+              }
+            },
+            type: "checkbox",
+          }}
+          columns={columns}
+          dataSource={data}
+        />
+      </div>
 
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" className="results-card">
@@ -305,6 +336,11 @@ const App: React.FC = () => {
                   <Button type="primary" onClick={refe}>
                     Empezar de Nuevo
                   </Button>
+                  <div style={{ textAlign: "center", marginBottom: "20px" }}>
+                    <Button type="primary" onClick={resetFields}>
+                      Resetear Campos
+                    </Button>
+                  </div>
                   <Select
                     defaultValue="0.10"
                     onChange={(value) => setGravamenRate(parseFloat(value))}
@@ -683,7 +719,7 @@ const App: React.FC = () => {
                 </Card>
 
                 <Card className="price-card">
-                  <h3>Costo Dinal del Vehículo</h3>
+                  <h3>Costo Final del Vehículo</h3>
                   <div
                     style={{
                       display: "flex",
@@ -753,9 +789,40 @@ const App: React.FC = () => {
                       )}
                     </div>
                   </div>
+                  <div className="grid-card">
+                    {/* 🔹 Campo nuevo: Suma de Seguro + Flete + Otros */}
+                    <div className="grid-item">
+                      <b>Seguro + Flete + Otros:</b>
+                    </div>
+                    <div className="grid-item center-currencyDOP">
+                      {formatCurrency(
+                        (seguroFleteOtros !== null
+                          ? seguroFleteOtros
+                          : (vehicle.Seguro || 0) +
+                            (vehicle.Flete || 0) +
+                            otros) * exchangeRate
+                      )}
+                    </div>
+                    <div className="grid-item">
+                      <InputNumber
+                        className="right-align-input"
+                        value={
+                          seguroFleteOtros !== null
+                            ? seguroFleteOtros
+                            : (vehicle.Seguro || 0) +
+                              (vehicle.Flete || 0) +
+                              otros
+                        }
+                        precision={2}
+                        onChange={(newValue) =>
+                          setSeguroFleteOtros(newValue ?? 0)
+                        }
+                        style={{ width: "120px" }}
+                      />
+                    </div>
+                  </div>
                   {/* Valor Vehículo */}
                   <div className="grid-card">
-                    {/* 🔹 Valor del Vehículo (Inicialmente es el Total CIF) */}
                     <div className="grid-item">
                       <b>Valor del Vehículo:</b>
                     </div>
@@ -782,7 +849,6 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
-
                   <hr />
 
                   <div className="grid-card">
