@@ -4,6 +4,7 @@ import type { TableColumnsType } from "antd";
 import "./styles.css";
 import ExchangeRate from "../Components/ExchangeRate";
 import { updateExchangeRate } from "../Services/updateExchangerRate";
+
 interface DataType {
   Otros: number;
   ValorVehiculo: number;
@@ -34,40 +35,27 @@ const App: React.FC = () => {
   const [seguroFleteOtros, setSeguroFleteOtros] = useState<number | null>(null);
 
   const resetFields = () => {
-    // Restablecer el valor de Seguro + Flete + Otros
     setSeguroFleteOtros(null);
-
-    // Restablecer el valor del Marbete
-    setMarbeteValue(3000); // Valor predeterminado del Marbete
-
-    // Restablecer el valor del Servicio Aduanero
-    setServicioAduaneroValue(8756.31); // Valor predeterminado del Servicio Aduanero
-
-    // Restablecer el valor de "Otros"
-    setOtros(0); // Valor predeterminado de Otros
-
-    // Restablecer los valores del vehículo (FOB, Seguro, Flete, Valor del Vehículo)
+    setMarbeteValue(3000);
+    setServicioAduaneroValue(8756.31);
+    setOtros(0);
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) => ({
         ...vehicle,
-        Valor: vehicle.Valor, // Restablecer FOB al valor original
-        Seguro: vehicle.Valor * 0.02, // Restablecer Seguro (2% del FOB)
-        Flete: 800, // Restablecer Flete (valor fijo)
-        ValorVehiculo: vehicle.Valor, // Restablecer Valor del Vehículo al valor original
+        Valor: vehicle.Valor,
+        Seguro: vehicle.Valor * 0.02,
+        Flete: 800,
+        ValorVehiculo: vehicle.Valor,
       }))
     );
   };
 
   const fetchData = async () => {
     try {
-      const response = await fetch("/vehicles.json"); // Ruta directa al archivo en la carpeta public
-
-      if (!response.ok) {
+      const response = await fetch("/vehicles.json");
+      if (!response.ok)
         throw new Error(`HTTP error! Status: ${response.status}`);
-      }
-
       const result = await response.json();
-
       const filteredData = result.filter((item: any) => {
         return (
           (filters.marca
@@ -101,16 +89,11 @@ const App: React.FC = () => {
   }, [filters]);
 
   useEffect(() => {
-    // Recalcular automáticamente cuando cambien las tasas seleccionadas
-    setSelectedVehicles((prevVehicles) => [...prevVehicles]);
-  }, [gravamenRate, co2Rate]);
-
-  useEffect(() => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) => ({
         ...vehicle,
-        Seguro: vehicle.Seguro ?? vehicle.Valor * 0.02, // Valor predeterminado si no está definido
-        Flete: vehicle.Flete ?? 800, // Valor predeterminado si no está definido
+        Seguro: vehicle.Seguro ?? vehicle.Valor * 0.02,
+        Flete: vehicle.Flete ?? 800,
       }))
     );
   }, [selectedRowKeys]);
@@ -122,9 +105,8 @@ const App: React.FC = () => {
     }).format(value);
   };
 
-  function refe() {
-    window.location.reload();
-  }
+  const refe = () => window.location.reload();
+
   const updateFOB = (vehicleKey: React.Key, newValue: number) => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) =>
@@ -134,35 +116,33 @@ const App: React.FC = () => {
   };
 
   const updateSeguro = (vehicleKey: React.Key, newValue: number) => {
-    setSelectedVehicles((prevVehicles) => {
-      return prevVehicles.map((vehicle) =>
+    setSelectedVehicles((prevVehicles) =>
+      prevVehicles.map((vehicle) =>
         vehicle.key === vehicleKey
           ? { ...vehicle, Seguro: newValue ?? vehicle.Valor * 0.02 }
           : vehicle
-      );
-    });
+      )
+    );
   };
 
   const updateFlete = (vehicleKey: React.Key, newValue: number) => {
-    setSelectedVehicles((prevVehicles) => {
-      return prevVehicles.map((vehicle) =>
+    setSelectedVehicles((prevVehicles) =>
+      prevVehicles.map((vehicle) =>
         vehicle.key === vehicleKey
           ? { ...vehicle, Flete: newValue ?? 800 }
           : vehicle
-      );
-    });
+      )
+    );
   };
 
   useEffect(() => {
     const fetchAndUpdateRate = async () => {
       const newRate = await updateExchangeRate();
-      if (newRate) {
-        setExchangeRate(newRate);
-      }
+      if (newRate) setExchangeRate(newRate);
     };
-
     fetchAndUpdateRate();
   }, []);
+
   const calculateTaxes = (vehicle: DataType) => {
     const fob = vehicle.Valor; // USD
 
@@ -172,8 +152,11 @@ const App: React.FC = () => {
         ? seguroFleteOtros
         : (vehicle.Seguro ?? fob * 0.02) + (vehicle.Flete ?? 800) + otros;
 
+    // Si el valor del vehículo fue editado, usamos ese valor directamente
+    const valorVehiculo = vehicle.ValorVehiculo ?? fob;
+
     // Calcular el Total CIF
-    const totalCIF = fob + seguroFleteOtrosValue; // USD
+    const totalCIF = fob + seguroFleteOtrosValue;
 
     // Gravamen dinámico (USD)
     const gravamen =
@@ -190,30 +173,30 @@ const App: React.FC = () => {
 
     // Total DGII (DOP) - Marbete ya está en DOP
     const totalDgiiUSD = co2 + placa; // USD
-    const totalDgiiDOP = totalDgiiUSD * exchangeRate + marbeteValue; // Convertimos CO2 y Placa a DOP y sumamos marbete
+    const totalDgiiDOP = totalDgiiUSD * exchangeRate + marbeteValue; // Convertimos a DOP y sumamos Marbete
 
     // Total Aduanas (DOP) - Convertimos todo a DOP
     const totalAduanasDOP =
       (gravamen + itbis) * exchangeRate + servicioAduaneroValue;
 
     // Valor Vehículo en DOP
-    const valorVehiculoDOP = (vehicle.ValorVehiculo ?? 0) * exchangeRate;
-
-    // Total CIF en DOP
-    const totalCIFDOP = totalCIF * exchangeRate;
+    const valorVehiculoDOP = valorVehiculo * exchangeRate;
 
     // Total Final (DOP)
     const TotalDOP =
-      totalCIFDOP + totalAduanasDOP + totalDgiiDOP + valorVehiculoDOP;
+      totalAduanasDOP +
+      totalDgiiDOP +
+      seguroFleteOtrosValue * exchangeRate +
+      valorVehiculoDOP;
 
     return {
       FOB: formatCurrency(fob * exchangeRate, "DOP"),
       CIF: formatCurrency(totalCIF * exchangeRate, "DOP"),
       Seguro: formatCurrency(
-        vehicle.Seguro ?? fob * 0.02 * exchangeRate,
+        (vehicle.Seguro ?? fob * 0.02) * exchangeRate,
         "DOP"
       ),
-      Flete: formatCurrency(vehicle.Flete ?? 800 * exchangeRate, "DOP"),
+      Flete: formatCurrency((vehicle.Flete ?? 800) * exchangeRate, "DOP"),
       Otros: formatCurrency(otros * exchangeRate, "DOP"),
       Gravamen: formatCurrency(gravamen * exchangeRate, "DOP"),
       ITBIS: formatCurrency(itbis * exchangeRate, "DOP"),
@@ -226,32 +209,13 @@ const App: React.FC = () => {
       Total: formatCurrency(TotalDOP, "DOP"),
     };
   };
+
   const columns: TableColumnsType<DataType> = [
-    {
-      title: "Marca",
-      dataIndex: "Marca",
-      key: "Marca",
-    },
-    {
-      title: "Modelo",
-      dataIndex: "Modelo",
-      key: "Modelo",
-    },
-    {
-      title: "Año",
-      dataIndex: "Año",
-      key: "Año",
-    },
-    {
-      title: "Valor",
-      dataIndex: "Valor",
-      key: "Valor",
-    },
-    {
-      title: "Pais",
-      dataIndex: "Pais",
-      key: "Pais",
-    },
+    { title: "Marca", dataIndex: "Marca", key: "Marca" },
+    { title: "Modelo", dataIndex: "Modelo", key: "Modelo" },
+    { title: "Año", dataIndex: "Año", key: "Año" },
+    { title: "Valor", dataIndex: "Valor", key: "Valor" },
+    { title: "Pais", dataIndex: "Pais", key: "Pais" },
     {
       title: "Especificaciones",
       dataIndex: "Especificaciones",
@@ -324,7 +288,6 @@ const App: React.FC = () => {
                   exchangeRate={exchangeRate || 0}
                   setExchangeRate={setExchangeRate}
                 />
-
                 <div>
                   RD${" "}
                   <InputNumber
@@ -380,7 +343,6 @@ const App: React.FC = () => {
                   <hr />
 
                   <div className="grid-card">
-                    {/* Valor FOB */}
                     <div className="grid-item">
                       <b>Valor Declarado FOB:</b>
                     </div>
@@ -399,7 +361,6 @@ const App: React.FC = () => {
                       />
                     </div>
 
-                    {/* Seguro */}
                     <div className="grid-item">
                       <b>Seguro:</b>
                     </div>
@@ -418,7 +379,6 @@ const App: React.FC = () => {
                       />
                     </div>
 
-                    {/* Flete */}
                     <div className="grid-item">
                       <b>Flete:</b>
                     </div>
@@ -437,7 +397,6 @@ const App: React.FC = () => {
                       />
                     </div>
 
-                    {/* Otros (Nuevo campo agregado correctamente) */}
                     <div className="grid-item">
                       <b>Otros:</b>
                     </div>
@@ -456,26 +415,25 @@ const App: React.FC = () => {
                   </div>
 
                   <hr />
-                  {/* Total CIF (Incluyendo Otros en la suma correctamente) */}
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Total CIF:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
                       {formatCurrency(
-                        ((vehicle.Valor || 0) +
+                        (vehicle.Valor +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
                           (vehicle.Flete ?? 800) +
-                          (otros ?? 350)) *
+                          otros) *
                           exchangeRate
                       )}
                     </div>
                     <div className="grid-item left-align-currencyUSD">
                       {formatCurrency(
-                        (vehicle.Valor || 0) +
+                        vehicle.Valor +
                           (vehicle.Seguro ?? vehicle.Valor * 0.02) +
                           (vehicle.Flete ?? 800) +
-                          (otros ?? 350), // 🔹 Se corrigió aquí
+                          otros,
                         "USD"
                       )}
                     </div>
@@ -501,7 +459,6 @@ const App: React.FC = () => {
                   <hr />
 
                   <div className="grid-card">
-                    {/* Gravamen */}
                     <div className="grid-item">
                       <b>Gravamen:</b>
                     </div>
@@ -526,7 +483,6 @@ const App: React.FC = () => {
                       )}
                     </div>
 
-                    {/* ITBIS */}
                     <div className="grid-item">
                       <b>ITBIS:</b>
                     </div>
@@ -551,7 +507,7 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-                    {/* Servicio Aduanero */}
+
                     <div className="grid-item">
                       <b>Servicio Aduanero:</b>
                     </div>
@@ -567,7 +523,6 @@ const App: React.FC = () => {
                       />
                     </div>
                     <div className="grid-item left-align-currencyUSD">
-                      {" "}
                       {formatCurrency(
                         servicioAduaneroValue / exchangeRate,
                         "USD"
@@ -622,7 +577,6 @@ const App: React.FC = () => {
                   <hr />
 
                   <div className="grid-card">
-                    {/* CO2 */}
                     <div className="grid-item">
                       <b>CO2:</b>
                     </div>
@@ -641,7 +595,7 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-                    {/* Placa */}
+
                     <div className="grid-item">
                       <b>Placa:</b>
                     </div>
@@ -666,26 +620,20 @@ const App: React.FC = () => {
                         "USD"
                       )}
                     </div>
-                    {/* Marbete */}
+
                     <div className="grid-item">
                       <b>Marbete:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      <div className="grid-item">
-                        <InputNumber
-                          className="right-align-input"
-                          value={marbeteValue}
-                          precision={2}
-                          onChange={(newValue) =>
-                            setMarbeteValue(newValue ?? 0)
-                          }
-                          style={{ width: "130px" }}
-                        />
-                      </div>
+                      <InputNumber
+                        className="right-align-input"
+                        value={marbeteValue}
+                        precision={2}
+                        onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
+                        style={{ width: "130px" }}
+                      />
                     </div>
-
                     <div className="grid-item left-align-currencyUSD">
-                      {" "}
                       {formatCurrency(marbeteValue / exchangeRate, "USD")}
                     </div>
                   </div>
@@ -737,7 +685,6 @@ const App: React.FC = () => {
                   <hr />
 
                   <div className="grid-card">
-                    {/* Total Aduanas */}
                     <div className="grid-item">
                       <b>Total Aduanas:</b>
                     </div>
@@ -763,7 +710,6 @@ const App: React.FC = () => {
                       )}
                     </div>
 
-                    {/* Total DGII */}
                     <div className="grid-item">
                       <b>Total DGII:</b>
                     </div>
@@ -790,7 +736,6 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <div className="grid-card">
-                    {/* 🔹 Campo nuevo: Suma de Seguro + Flete + Otros */}
                     <div className="grid-item">
                       <b>Seguro + Flete + Otros:</b>
                     </div>
@@ -821,7 +766,6 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
-                  {/* Valor Vehículo */}
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Valor del Vehículo:</b>
@@ -836,21 +780,20 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.ValorVehiculo ?? vehicle.Valor}
                         precision={2}
-                        onChange={(newValue) =>
+                        onChange={(newValue) => {
                           setSelectedVehicles((prevVehicles) =>
                             prevVehicles.map((v) =>
                               v.key === vehicle.key
                                 ? { ...v, ValorVehiculo: newValue ?? 0 }
                                 : v
                             )
-                          )
-                        }
+                          );
+                        }}
                         style={{ width: "120px" }}
                       />
                     </div>
                   </div>
                   <hr />
-
                   <div className="grid-card">
                     <div className="grid-item">
                       <b>Total + Impuestos:</b>
