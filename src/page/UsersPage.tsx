@@ -341,31 +341,38 @@ const App: React.FC = () => {
                     </div>
                   </div>
                   <hr />
-
                   <div className="grid-card">
+                    {/* Valor FOB */}
                     <div className="grid-item">
                       <b>Valor Declarado FOB:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(vehicle.Valor * exchangeRate)}
+                      {formatCurrency(
+                        (vehicle.Valor || 0) * exchangeRate, // Asegurar que sea un número válido
+                        "DOP"
+                      )}
                     </div>
                     <div className="grid-item">
                       <InputNumber
                         className="right-align-input"
                         value={vehicle.Valor}
                         precision={2}
-                        onChange={(newValue) =>
-                          updateFOB(vehicle.key, newValue ?? 0)
-                        }
+                        onChange={(newValue) => {
+                          updateFOB(vehicle.key, newValue ?? 0);
+                        }}
                         style={{ width: "120px" }}
                       />
                     </div>
 
+                    {/* Seguro */}
                     <div className="grid-item">
                       <b>Seguro:</b>
                     </div>
                     <div className="grid-item center-currencyDOP">
-                      {formatCurrency(vehicle.Seguro * exchangeRate)}
+                      {formatCurrency(
+                        (vehicle.Seguro || vehicle.Valor * 0.02) * exchangeRate, // Asegurar que sea un número válido
+                        "DOP"
+                      )}
                     </div>
                     <div className="grid-item">
                       <InputNumber
