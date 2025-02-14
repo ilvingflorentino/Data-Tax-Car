@@ -791,7 +791,15 @@ const App: React.FC = () => {
                           setSelectedVehicles((prevVehicles) =>
                             prevVehicles.map((v) =>
                               v.key === vehicle.key
-                                ? { ...v, ValorVehiculo: newValue ?? 0 }
+                                ? {
+                                    ...v,
+                                    ValorVehiculo:
+                                      newValue !== null &&
+                                      newValue !== undefined
+                                        ? newValue
+                                        : vehicle.ValorVehiculo ??
+                                          vehicle.Valor,
+                                  }
                                 : v
                             )
                           );
@@ -800,6 +808,7 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
+
                   <hr />
                   <div className="grid-card">
                     <div className="grid-item">
