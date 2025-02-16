@@ -134,7 +134,13 @@ const App: React.FC = () => {
   const updateFOB = (vehicleKey: React.Key, newValue: number) => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) =>
-        vehicle.key === vehicleKey ? { ...vehicle, Valor: newValue } : vehicle
+        vehicle.key === vehicleKey
+          ? {
+              ...vehicle,
+              Valor: newValue, // ✅ Actualiza el FOB
+              ValorVehiculo: newValue, // ✅ También actualiza el Valor del Vehículo
+            }
+          : vehicle
       )
     );
   };
@@ -358,7 +364,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid-item center-currencyDOP">
                       {formatCurrency(
-                        (vehicle.Valor || 0) * exchangeRate, // Asegurar que sea un número válido
+                        (vehicle.Valor || 0) * exchangeRate,
                         "DOP"
                       )}
                     </div>
@@ -367,9 +373,9 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.Valor}
                         precision={2}
-                        onChange={(newValue) => {
-                          updateFOB(vehicle.key, newValue ?? 0);
-                        }}
+                        onChange={(newValue) =>
+                          updateFOB(vehicle.key, newValue ?? 0)
+                        }
                         style={{ width: "120px" }}
                       />
                     </div>
@@ -818,7 +824,6 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
-
                   <hr />
                   <div className="grid-card">
                     <div className="grid-item">
