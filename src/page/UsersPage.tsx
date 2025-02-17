@@ -292,7 +292,7 @@ const App: React.FC = () => {
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" className="results-card">
           {selectedVehicles.map((vehicle, index) => (
-            <div key={index} className="vehicle-card">``
+            <div key={index} className="vehicle-card">
               <h2 className="vehicle-title">
                 {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                 {vehicle.Pais}
@@ -337,7 +337,6 @@ const App: React.FC = () => {
                   </Select>
                 </div>
               </div>
-
               <div className="grid-container">
                 <Card className="price-card">
                   <div
