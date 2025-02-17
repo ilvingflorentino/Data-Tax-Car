@@ -1,1 +1,1 @@
-{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/visitcounter.tsx","./src/services/firebaseconfig.ts","./src/services/visitservice.ts","./src/page/userspage.tsx"],"version":"5.6.3"}
+{"root":["./src/app.tsx","./src/main.tsx","./src/vite-env.d.ts","./src/components/exchangerate.tsx","./src/components/visitcounter.tsx","./src/services/firebaseconfig.ts","./src/services/updateexchangerrate.tsx","./src/services/visitservice.ts","./src/page/userspage.tsx"],"version":"5.6.3"}

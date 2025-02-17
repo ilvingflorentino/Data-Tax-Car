@@ -1,14 +1,11 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 import { db } from "../Services/firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc } from "firebase/firestore";
 
 const ExchangeRate: React.FC<{
   exchangeRate: number;
   setExchangeRate: (rate: number) => void;
-}> = ({ exchangeRate, setExchangeRate }) => {
-  const [loading, setLoading] = useState(true);
-  const [newRate, setNewRate] = useState<number | null>(null);
-
+}> = ({ setExchangeRate }) => {
   useEffect(() => {
     const fetchExchangeRate = async () => {
       try {
@@ -21,22 +18,11 @@ const ExchangeRate: React.FC<{
       } catch (error) {
         console.error("Error obteniendo la tasa de cambio:", error);
       } finally {
-        setLoading(false);
       }
     };
 
     fetchExchangeRate();
   }, [setExchangeRate]);
-
-  const handleUpdateRate = async () => {
-    if (newRate) {
-      await setDoc(doc(db, "configuracion", "tasaDeCambio"), {
-        valor: newRate,
-      });
-      setExchangeRate(newRate);
-      setNewRate(null);
-    }
-  };
 
   return <div></div>;
 };

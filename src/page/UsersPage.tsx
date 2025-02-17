@@ -306,6 +306,7 @@ const App: React.FC = () => {
                 <div>
                   RD${" "}
                   <InputNumber
+                    controls={false}
                     value={exchangeRate}
                     onChange={(value) => setExchangeRate(value ?? 0)}
                   />
@@ -371,6 +372,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.Valor}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) =>
                           updateFOB(vehicle.key, newValue ?? 0)
                         }
@@ -393,6 +395,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.Seguro}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) =>
                           updateSeguro(vehicle.key, newValue ?? 0)
                         }
@@ -411,6 +414,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.Flete}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) =>
                           updateFlete(vehicle.key, newValue ?? 0)
                         }
@@ -429,6 +433,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={otros}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) => setOtros(newValue ?? 0)}
                         style={{ width: "120px" }}
                       />
@@ -537,6 +542,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={servicioAduaneroValue}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) =>
                           setServicioAduaneroValue(newValue ?? 0)
                         }
@@ -650,6 +656,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={marbeteValue}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) => setMarbeteValue(newValue ?? 0)}
                         style={{ width: "130px" }}
                       />
@@ -780,6 +787,7 @@ const App: React.FC = () => {
                               otros
                         }
                         precision={2}
+                        controls={false}
                         onChange={(newValue) =>
                           setSeguroFleteOtros(newValue ?? 0)
                         }
@@ -801,6 +809,7 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.ValorVehiculo ?? vehicle.Valor}
                         precision={2}
+                        controls={false}
                         onChange={(newValue) => {
                           setSelectedVehicles((prevVehicles) =>
                             prevVehicles.map((v) =>
