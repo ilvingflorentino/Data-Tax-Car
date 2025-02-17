@@ -67,7 +67,7 @@ const App: React.FC = () => {
           (filters.year ? item.Año.toString().includes(filters.year) : true)
         );
       });
-
+      // valor que sea esta en tabla almaceno ese fob en una variable y luego se muestra cuando se resete el campo.
       setData(
         filteredData.map((item: any, index: number) => ({
           key: index,
