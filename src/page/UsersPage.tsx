@@ -33,23 +33,47 @@ const App: React.FC = () => {
     useState<number>(8756.31);
   const [otros, setOtros] = useState<number>(0);
   const [seguroFleteOtros, setSeguroFleteOtros] = useState<number | null>(null);
-
+  const [originalVehicles, setOriginalVehicles] = useState<DataType[]>([]);
+  const handleRowSelection = (newSelectedRowKeys: React.Key[]) => {
+    if (
+      selectedRowKeys.length > 0 &&
+      newSelectedRowKeys[0] === selectedRowKeys[0]
+    ) {
+      setSelectedRowKeys([]);
+      setSelectedVehicles([]);
+      setOriginalVehicles([]); // Resetea los valores originales también
+    } else {
+      const selected = data.filter((item) =>
+        newSelectedRowKeys.includes(item.key)
+      );
+      setSelectedRowKeys(newSelectedRowKeys);
+      setSelectedVehicles(selected);
+      setOriginalVehicles(selected); // Guarda la versión original de los valores
+    }
+  };
   const resetFields = () => {
     setSeguroFleteOtros(null);
     setMarbeteValue(3000);
     setServicioAduaneroValue(8756.31);
     setOtros(0);
     setSelectedVehicles((prevVehicles) =>
-      prevVehicles.map((vehicle) => ({
-        ...vehicle,
-        Valor: vehicle.Valor,
-        Seguro: vehicle.Valor * 0.02,
-        Flete: 800,
-        ValorVehiculo: vehicle.Valor,
-      }))
+      prevVehicles.map((vehicle) => {
+        const originalVehicle = originalVehicles.find(
+          (v) => v.key === vehicle.key
+        );
+        return {
+          ...vehicle,
+          Valor: originalVehicle?.Valor ?? vehicle.Valor, // Restaura el valor original del FOB
+          Seguro:
+            originalVehicle?.Valor !== undefined
+              ? originalVehicle.Valor * 0.02
+              : vehicle.Seguro, // Seguro basado en FOB
+          Flete: 800,
+          ValorVehiculo: originalVehicle?.Valor ?? vehicle.Valor, // También reseteamos el valor del vehículo
+        };
+      })
     );
   };
-
   const fetchData = async () => {
     try {
       const response = await fetch("/vehicles.json");
@@ -110,7 +134,13 @@ const App: React.FC = () => {
   const updateFOB = (vehicleKey: React.Key, newValue: number) => {
     setSelectedVehicles((prevVehicles) =>
       prevVehicles.map((vehicle) =>
-        vehicle.key === vehicleKey ? { ...vehicle, Valor: newValue } : vehicle
+        vehicle.key === vehicleKey
+          ? {
+              ...vehicle,
+              Valor: newValue, // ✅ Actualiza el FOB
+              ValorVehiculo: newValue, // ✅ También actualiza el Valor del Vehículo
+            }
+          : vehicle
       )
     );
   };
@@ -252,21 +282,7 @@ const App: React.FC = () => {
         <Table
           rowSelection={{
             selectedRowKeys,
-            onChange: (newSelectedRowKeys) => {
-              if (
-                selectedRowKeys.length > 0 &&
-                newSelectedRowKeys[0] === selectedRowKeys[0]
-              ) {
-                setSelectedRowKeys([]);
-                setSelectedVehicles([]);
-              } else {
-                setSelectedRowKeys(newSelectedRowKeys);
-                const selected = data.filter((item) =>
-                  newSelectedRowKeys.includes(item.key)
-                );
-                setSelectedVehicles(selected);
-              }
-            },
+            onChange: handleRowSelection,
             type: "checkbox",
           }}
           columns={columns}
@@ -348,7 +364,7 @@ const App: React.FC = () => {
                     </div>
                     <div className="grid-item center-currencyDOP">
                       {formatCurrency(
-                        (vehicle.Valor || 0) * exchangeRate, // Asegurar que sea un número válido
+                        (vehicle.Valor || 0) * exchangeRate,
                         "DOP"
                       )}
                     </div>
@@ -357,9 +373,9 @@ const App: React.FC = () => {
                         className="right-align-input"
                         value={vehicle.Valor}
                         precision={2}
-                        onChange={(newValue) => {
-                          updateFOB(vehicle.key, newValue ?? 0);
-                        }}
+                        onChange={(newValue) =>
+                          updateFOB(vehicle.key, newValue ?? 0)
+                        }
                         style={{ width: "120px" }}
                       />
                     </div>
@@ -808,7 +824,6 @@ const App: React.FC = () => {
                       />
                     </div>
                   </div>
-
                   <hr />
                   <div className="grid-card">
                     <div className="grid-item">
