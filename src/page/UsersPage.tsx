@@ -1,9 +1,27 @@
 import React, { useState, useEffect, ReactNode } from "react";
-import { Button, Input, Table, Card, InputNumber, Select } from "antd";
+import {
+  Button,
+  Input,
+  Table,
+  Card,
+  InputNumber,
+  Select,
+  Pagination,
+} from "antd";
 import type { TableColumnsType } from "antd";
 import "./styles.css";
 import ExchangeRate from "../Components/ExchangeRate";
 import { updateExchangeRate } from "../Services/updateExchangerRate";
+import { db } from "../Services/firebaseConfig";
+import {
+  collection,
+  getDocs,
+  limit,
+  orderBy,
+  query,
+  startAfter,
+  where,
+} from "firebase/firestore";
 
 interface DataType {
   Otros: number;
@@ -34,22 +52,18 @@ const App: React.FC = () => {
   const [otros, setOtros] = useState<number>(0);
   const [seguroFleteOtros, setSeguroFleteOtros] = useState<number | null>(null);
   const [originalVehicles, setOriginalVehicles] = useState<DataType[]>([]);
+  const [filteredData, setFilteredData] = useState<DataType[]>([]);
+  const [lastDoc, setLastDoc] = useState<any>(null);
+  const [pageSize, setPageSize] = useState(10);
+  const [loading, setLoading] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [totalVehicles, setTotalVehicles] = useState(0);
   const handleRowSelection = (newSelectedRowKeys: React.Key[]) => {
-    if (
-      selectedRowKeys.length > 0 &&
-      newSelectedRowKeys[0] === selectedRowKeys[0]
-    ) {
-      setSelectedRowKeys([]);
-      setSelectedVehicles([]);
-      setOriginalVehicles([]); // Resetea los valores originales también
-    } else {
-      const selected = data.filter((item) =>
-        newSelectedRowKeys.includes(item.key)
-      );
-      setSelectedRowKeys(newSelectedRowKeys);
-      setSelectedVehicles(selected);
-      setOriginalVehicles(selected); // Guarda la versión original de los valores
-    }
+    const selected = data.filter((item) =>
+      newSelectedRowKeys.includes(item.key)
+    );
+    setSelectedRowKeys(newSelectedRowKeys);
+    setSelectedVehicles(selected);
   };
   const resetFields = () => {
     setSeguroFleteOtros(null);
@@ -74,43 +88,123 @@ const App: React.FC = () => {
       })
     );
   };
-  const fetchData = async () => {
+
+  const getPaginatedData = (
+    data: DataType[],
+    currentPage: number,
+    pageSize: number
+  ) => {
+    const startIndex = (currentPage - 1) * pageSize;
+    const endIndex = startIndex + pageSize;
+    return data.slice(startIndex, endIndex);
+  };
+
+  const normalizeText = (text: string) => {
+    return text.trim().toLowerCase().replace(/\s+/g, " ");
+  };
+
+  const isValidFilter = (value: string) => {
+    return value.trim().length >= 3; // Devuelve true si tiene 3 o más caracteres
+  };
+  const applyFilters = (
+    vehicles: DataType[],
+    filters: { marca: string; modelo: string; year: string }
+  ) => {
+    return vehicles.filter((vehicle) => {
+      const normalizedMarca = normalizeText(vehicle.Marca);
+      const normalizedModelo = normalizeText(vehicle.Modelo);
+      const searchMarca = normalizeText(filters.marca);
+      const searchModelo = normalizeText(filters.modelo);
+
+      // Aplicar filtro de marca solo si tiene al menos 3 letras
+      const matchesMarca = filters.marca
+        ? isValidFilter(filters.marca) && normalizedMarca.includes(searchMarca)
+        : true;
+
+      // Aplicar filtro de modelo solo si tiene al menos 3 letras
+      const matchesModelo = filters.modelo
+        ? isValidFilter(filters.modelo) &&
+          normalizedModelo.includes(searchModelo)
+        : true;
+
+      // Aplicar filtro de año sin restricción de longitud
+      const matchesYear = filters.year
+        ? vehicle.Año === parseInt(filters.year)
+        : true;
+
+      return matchesMarca && matchesModelo && matchesYear;
+    });
+  };
+
+  const fetchVehicles = async (_p0: boolean) => {
     try {
-      const response = await fetch("/vehicles.json");
-      if (!response.ok)
-        throw new Error(`HTTP error! Status: ${response.status}`);
-      const result = await response.json();
-      const filteredData = result.filter((item: any) => {
-        return (
-          (filters.marca
-            ? item.Marca.toLowerCase().includes(filters.marca.toLowerCase())
-            : true) &&
-          (filters.modelo
-            ? item.Modelo.toLowerCase().includes(filters.modelo.toLowerCase())
-            : true) &&
-          (filters.year ? item.Año.toString().includes(filters.year) : true)
-        );
+      setLoading(true);
+      const q = query(collection(db, "vehiculos"), orderBy("Año", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      const vehicles = querySnapshot.docs.map((doc) => {
+        const data = doc.data();
+        return {
+          key: doc.id,
+          Otros: data.Otros ?? 0,
+          ValorVehiculo: data.ValorVehiculo ?? 0,
+          Flete: data.Flete ?? 0,
+          Seguro: data.Seguro ?? 0,
+          title: data.title ?? "",
+          Marca: data.Marca ?? "",
+          Modelo: data.Modelo ?? "",
+          Valor: data.Valor ?? 0,
+          Pais: data.Pais || data.País || "No especificado",
+          Año: data.Año ?? 0,
+          Especificaciones: data.Especificaciones ?? "",
+        };
       });
 
-      setData(
-        filteredData.map((item: any, index: number) => ({
-          key: index,
-          Marca: item.Marca,
-          Modelo: item.Modelo,
-          Año: item.Año,
-          Valor: parseFloat(item.Valor),
-          Pais: item.Pais,
-          Especificaciones: item.Especificaciones,
-        }))
+      // Aplicar filtros en el frontend
+      const filteredVehicles = applyFilters(vehicles, filters);
+      setFilteredData(filteredVehicles);
+
+      // Paginar los datos filtrados
+      const paginatedData = getPaginatedData(
+        filteredVehicles,
+        currentPage,
+        pageSize
       );
+      setData(paginatedData);
     } catch (error) {
-      console.error("Error en la petición de vehículos:", error);
+      console.error("Error al obtener los vehículos:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
   useEffect(() => {
-    fetchData();
-  }, [filters]);
+    setCurrentPage(1); // Resetear a la primera página
+    fetchVehicles(true); // Recargar datos con los nuevos filtros
+  }, [filters.marca, filters.modelo, filters.year]);
+
+  useEffect(() => {
+    // Verificar si los filtros tienen al menos 3 letras
+    const isMarcaValid = !filters.marca || isValidFilter(filters.marca);
+    const isModeloValid = !filters.modelo || isValidFilter(filters.modelo);
+
+    if (isMarcaValid && isModeloValid) {
+      setCurrentPage(1); // Resetear a la primera página
+      fetchVehicles(true); // Recargar datos con los nuevos filtros
+    }
+  }, [filters.marca, filters.modelo, filters.year]);
+
+  useEffect(() => {
+    const delaySearch = setTimeout(() => {
+      fetchVehicles(true); // Resetear paginación y aplicar filtros
+    }, 300); // Retraso de 300ms para evitar múltiples llamadas
+
+    return () => clearTimeout(delaySearch); // Limpiar el timeout si el usuario sigue escribiendo
+  }, [filters.marca, filters.modelo, filters.year]);
+
+  useEffect(() => {
+    fetchVehicles(false); // Cargar datos cuando cambia la página o el tamaño de la página
+  }, [currentPage, pageSize]);
 
   useEffect(() => {
     setSelectedVehicles((prevVehicles) =>
@@ -239,12 +333,16 @@ const App: React.FC = () => {
       Total: formatCurrency(TotalDOP, "DOP"),
     };
   };
-
   const columns: TableColumnsType<DataType> = [
     { title: "Marca", dataIndex: "Marca", key: "Marca" },
     { title: "Modelo", dataIndex: "Modelo", key: "Modelo" },
     { title: "Año", dataIndex: "Año", key: "Año" },
-    { title: "Valor", dataIndex: "Valor", key: "Valor" },
+    {
+      title: "Valor",
+      dataIndex: "Valor",
+      key: "Valor",
+      render: (value: number) => formatCurrency(value, "USD"), // Formatear como moneda
+    },
     { title: "Pais", dataIndex: "Pais", key: "Pais" },
     {
       title: "Especificaciones",
@@ -252,34 +350,39 @@ const App: React.FC = () => {
       key: "Especificaciones",
     },
   ];
+  const handlePageChange = (page: number, pageSize?: number) => {
+    setCurrentPage(page);
+    if (pageSize) {
+      setPageSize(pageSize);
+    }
+    const paginatedData = getPaginatedData(filteredData, page, pageSize || 10);
+    setData(paginatedData);
+  };
 
   return (
     <div className="container">
       <div className="filters">
         <Input
           placeholder="Buscar por Marca"
-          value={filters.marca}
           onChange={(e) =>
             setFilters((prev) => ({ ...prev, marca: e.target.value }))
           }
         />
         <Input
           placeholder="Buscar por Modelo"
-          value={filters.modelo}
           onChange={(e) =>
             setFilters((prev) => ({ ...prev, modelo: e.target.value }))
           }
         />
         <Input
           placeholder="Buscar por Año"
-          value={filters.year}
           onChange={(e) =>
             setFilters((prev) => ({ ...prev, year: e.target.value }))
           }
         />
       </div>
       <div className="scrollable-container">
-        <Table
+        <Table<DataType>
           rowSelection={{
             selectedRowKeys,
             onChange: handleRowSelection,
@@ -287,12 +390,22 @@ const App: React.FC = () => {
           }}
           columns={columns}
           dataSource={data}
+          pagination={false}
+        />
+        <Pagination
+          align="end"
+          current={currentPage}
+          pageSize={pageSize}
+          total={filteredData.length}
+          onChange={handlePageChange}
+          showSizeChanger
+          pageSizeOptions={["10", "20", "50", "100"]}
         />
       </div>
       {selectedVehicles.length > 0 && (
         <Card title="Resultados de los cálculos" className="results-card">
-          {selectedVehicles.map((vehicle, index) => (
-            <div key={index} className="vehicle-card">
+          {selectedVehicles.map((vehicle) => (
+            <div key={vehicle.key} className="vehicle-card">
               <h2 className="vehicle-title">
                 {vehicle.Marca} {vehicle.Modelo} ({vehicle.Año}) -{" "}
                 {vehicle.Pais}

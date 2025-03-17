@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
-import { getFirestore, doc, getDoc, setDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { initializeFirestore, persistentLocalCache } from "firebase/firestore";
 
 // 🔹 Configuración de tu Firebase (Cambia esto con tus credenciales)
 const firebaseConfig = {
@@ -13,6 +14,8 @@ const firebaseConfig = {
 
 // 🔹 Inicializar Firebase
 const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const db = initializeFirestore(app, {
+  localCache: persistentLocalCache(),
+});
 
 export { db, doc, getDoc, setDoc };
