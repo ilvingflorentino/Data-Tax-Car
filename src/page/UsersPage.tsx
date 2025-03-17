@@ -13,15 +13,7 @@ import "./styles.css";
 import ExchangeRate from "../Components/ExchangeRate";
 import { updateExchangeRate } from "../Services/updateExchangerRate";
 import { db } from "../Services/firebaseConfig";
-import {
-  collection,
-  getDocs,
-  limit,
-  orderBy,
-  query,
-  startAfter,
-  where,
-} from "firebase/firestore";
+import { collection, getDocs, orderBy, query } from "firebase/firestore";
 
 interface DataType {
   Otros: number;
