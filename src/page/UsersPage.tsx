@@ -43,13 +43,10 @@ const App: React.FC = () => {
     useState<number>(8756.31);
   const [otros, setOtros] = useState<number>(0);
   const [seguroFleteOtros, setSeguroFleteOtros] = useState<number | null>(null);
-  const [originalVehicles, setOriginalVehicles] = useState<DataType[]>([]);
   const [filteredData, setFilteredData] = useState<DataType[]>([]);
-  const [lastDoc, setLastDoc] = useState<any>(null);
+  //const [lastDoc, setLastDoc] = useState<any>(null);
   const [pageSize, setPageSize] = useState(10);
-  const [loading, setLoading] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
-  const [totalVehicles, setTotalVehicles] = useState(0);
   const handleRowSelection = (newSelectedRowKeys: React.Key[]) => {
     const selected = data.filter((item) =>
       newSelectedRowKeys.includes(item.key)
@@ -57,27 +54,15 @@ const App: React.FC = () => {
     setSelectedRowKeys(newSelectedRowKeys);
     setSelectedVehicles(selected);
   };
+
   const resetFields = () => {
-    setSeguroFleteOtros(null);
-    setMarbeteValue(3000);
-    setServicioAduaneroValue(8756.31);
-    setOtros(0);
-    setSelectedVehicles((prevVehicles) =>
-      prevVehicles.map((vehicle) => {
-        const originalVehicle = originalVehicles.find(
-          (v) => v.key === vehicle.key
-        );
-        return {
-          ...vehicle,
-          Valor: originalVehicle?.Valor ?? vehicle.Valor, // Restaura el valor original del FOB
-          Seguro:
-            originalVehicle?.Valor !== undefined
-              ? originalVehicle.Valor * 0.02
-              : vehicle.Seguro, // Seguro basado en FOB
-          Flete: 800,
-          ValorVehiculo: originalVehicle?.Valor ?? vehicle.Valor, // También reseteamos el valor del vehículo
-        };
-      })
+    setSelectedVehicles(
+      data.map((vehicle) => ({
+        ...vehicle,
+        Seguro: vehicle.Valor * 0.02, // Recalcula el seguro
+        Flete: 800,
+        ValorVehiculo: vehicle.Valor,
+      }))
     );
   };
 
@@ -96,7 +81,7 @@ const App: React.FC = () => {
   };
 
   const isValidFilter = (value: string) => {
-    return value.trim().length >= 3; // Devuelve true si tiene 3 o más caracteres
+    return value.trim().length >= 3;
   };
   const applyFilters = (
     vehicles: DataType[],
@@ -130,7 +115,6 @@ const App: React.FC = () => {
 
   const fetchVehicles = async (_p0: boolean) => {
     try {
-      setLoading(true);
       const q = query(collection(db, "vehiculos"), orderBy("Año", "desc"));
       const querySnapshot = await getDocs(q);
 
@@ -152,11 +136,8 @@ const App: React.FC = () => {
         };
       });
 
-      // Aplicar filtros en el frontend
       const filteredVehicles = applyFilters(vehicles, filters);
       setFilteredData(filteredVehicles);
-
-      // Paginar los datos filtrados
       const paginatedData = getPaginatedData(
         filteredVehicles,
         currentPage,
@@ -166,7 +147,6 @@ const App: React.FC = () => {
     } catch (error) {
       console.error("Error al obtener los vehículos:", error);
     } finally {
-      setLoading(false);
     }
   };
 
